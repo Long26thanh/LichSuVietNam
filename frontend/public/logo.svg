@@ -1,0 +1,59 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Main background gradient -->
+    <linearGradient id="mainBackground" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6" />
+      <stop offset="100%" style="stop-color:#1d4ed8" />
+    </linearGradient>
+    
+    <!-- Drop shadow filter for temple -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  
+  <!-- Main background container -->
+  <rect 
+    x="0" 
+    y="0" 
+    width="32" 
+    height="32" 
+    fill="url(#mainBackground)"
+    rx="6"
+    ry="6"
+  />
+  
+  <!-- Temple symbol centered in container -->
+  <g transform="translate(8, 8)" filter="url(#dropShadow)">
+    <!-- Roof/Top structure -->
+    <path
+      d="M8 1.3L1.3 4.7V6H14.7V4.7L8 1.3Z"
+      fill="#ffffff"
+      fill-opacity="0.95"
+    />
+    
+    <!-- Main building structure and side pillars -->
+    <path
+      d="M2.7 6H4V12.7H2.7V14H13.3V12.7H12V6H13.3V12.7H14.7V14H1.3V12.7H2.7V6Z"
+      fill="#ffffff"
+      fill-opacity="0.9"
+    />
+    
+    <!-- Center columns -->
+    <path
+      d="M5.3 6H6.7V12.7H5.3V6Z M9.3 6H10.7V12.7H9.3V6Z"
+      fill="#ffffff"
+      fill-opacity="0.85"
+    />
+    
+    <!-- Base/Foundation -->
+    <rect
+      x="2"
+      y="12.7"
+      width="12"
+      height="1.3"
+      fill="#ffffff"
+      fill-opacity="0.95"
+    />
+  </g>
+</svg>
