@@ -1,0 +1,10 @@
+export { default as home } from "./home.svg";
+export { default as news } from "./news.svg";
+export { default as timeline } from "./timeline.svg";
+export { default as user } from "./user.svg";
+export { default as events } from "./events.svg";
+export { default as locations } from "./locations.svg";
+export { default as search } from "./search.svg";
+export { default as dropdownArrow } from "./dropdown-arrow.svg";
+export { default as settings } from "./settings.svg";
+export { default as logout } from "./logout.svg";

@@ -1,0 +1,22 @@
+export { default as Home } from "./Home/Home";
+export { default as NotFound } from "./404/404";
+export { default as Register } from "./Register/Register";
+export { default as Login } from "./Login/Login";
+export { default as Profile } from "./Profile/Profile";
+export { default as TimeLine } from "./TimeLine/TimeLine";
+export { default as PeriodDetail } from "./PeriodDetail/PeriodDetail";
+export { default as Location } from "./Location/Location";
+export { default as LocationDetail } from "./LocationDetail/LocationDetail";
+export { default as Figure } from "./Figure/Figure";
+export { default as FigureDetail } from "./FigureDetail/FigureDetail";
+export { default as Event } from "./Event/Event";
+export { default as EventDetail } from "./EventDetail/EventDetail";
+// Admin pages
+export { default as Admin } from "./Admin/Admin";
+export { default as AdminDashboard } from "./Admin/AdminDashboard/AdminDashboard";
+export { default as AdminUsers } from "./Admin/AdminUsers/AdminUsers";
+export { default as AdminEvents } from "./Admin/AdminEvents/AdminEvents";
+export { default as AdminFigures } from "./Admin/AdminFigures/AdminFigures";
+export { default as AdminLocations } from "./Admin/AdminLocations/AdminLocations";
+export { default as AdminPeriods } from "./Admin/AdminPeriods/AdminPeriods";
+export { default as AdminProfile } from "./Admin/AdminProfile/AdminProfile";

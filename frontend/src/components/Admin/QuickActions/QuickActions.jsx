@@ -1,0 +1,77 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import config from '@/config';
+import './QuickActions.css';
+
+const QuickActions = () => {
+    const navigate = useNavigate();
+
+    const actions = [
+        {
+            title: 'Thêm sự kiện mới',
+            description: 'Tạo sự kiện lịch sử mới',
+            icon: '📅',
+            color: '#2196F3',
+            path: config.routes.adminEvents,
+            action: 'add'
+        },
+        {
+            title: 'Thêm nhân vật',
+            description: 'Thêm nhân vật lịch sử',
+            icon: '👤',
+            color: '#FF9800',
+            path: config.routes.adminFigures,
+            action: 'add'
+        },
+        {
+            title: 'Thêm địa điểm',
+            description: 'Thêm địa điểm lịch sử',
+            icon: '📍',
+            color: '#9C27B0',
+            path: config.routes.adminLocations,
+            action: 'add'
+        },
+        {
+            title: 'Quản lý người dùng',
+            description: 'Xem và quản lý người dùng',
+            icon: '👥',
+            color: '#4CAF50',
+            path: config.routes.adminUsers,
+            action: 'manage'
+        }
+    ];
+
+    const handleActionClick = (action) => {
+        navigate(action.path);
+    };
+
+    return (
+        <div className="quick-actions">
+            <div className="actions-header">
+                <h3>Thao tác nhanh</h3>
+                <p>Thực hiện các tác vụ quản lý phổ biến</p>
+            </div>
+            <div className="actions-grid">
+                {actions.map((action, index) => (
+                    <button
+                        key={index}
+                        className="action-card"
+                        onClick={() => handleActionClick(action)}
+                        style={{ '--action-color': action.color }}
+                    >
+                        <div className="action-icon">
+                            {action.icon}
+                        </div>
+                        <div className="action-content">
+                            <h4 className="action-title">{action.title}</h4>
+                            <p className="action-description">{action.description}</p>
+                        </div>
+                        <div className="action-arrow">→</div>
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+export default QuickActions;

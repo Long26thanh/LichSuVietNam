@@ -1,11 +1,27 @@
 const routes = {
+    notFound: "*",
     home: "/",
     news: "/news",
     timeline: "/timeline",
+    periodDetail: "/timeline/:id",
     characters: "/characters",
     events: "/events",
+    eventDetail: "/events/:id",
     locations: "/locations",
-    notFound: "/404",
+    locationDetail: "/locations/:id",
+    figureDetail: "/characters/:id",
+    register: "/register",
+    login: "/login",
+    profile: "/profile",
+    admin: "/admin",
+    adminLogin: "/admin/login",
+    adminDashboard: "/admin/dashboard",
+    adminUsers: "/admin/users",
+    adminEvents: "/admin/events",
+    adminFigures: "/admin/figures",
+    adminLocations: "/admin/locations",
+    adminPeriods: "/admin/periods",
+    adminProfile: "/admin/profile",
 };
 
 export default routes;

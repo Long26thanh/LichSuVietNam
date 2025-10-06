@@ -1,0 +1,62 @@
+.admin-profile {
+    padding: 20px;
+}
+
+.admin-profile__header h2 {
+    margin: 0 0 4px 0;
+}
+
+.admin-profile__message {
+    margin: 12px 0;
+    padding: 10px 12px;
+    background: #e6fffa;
+    border: 1px solid #b2f5ea;
+    color: #234e52;
+    border-radius: 6px;
+}
+
+.admin-profile__card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.admin-profile__form .form-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.admin-profile__form label {
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.admin-profile__form input,
+.admin-profile__form textarea {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+}
+
+.admin-profile__form .actions {
+    margin-top: 16px;
+}
+
+.admin-profile__form button {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+
+.admin-profile__form button[disabled] {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+

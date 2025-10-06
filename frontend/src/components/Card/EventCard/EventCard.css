@@ -1,0 +1,237 @@
+/* Event Card Styling */
+.event-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.event-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.event-card:hover::before {
+    opacity: 1;
+}
+
+.event-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.event-card .event-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    flex: 1;
+}
+
+.event-card .event-date {
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.event-card .event-card-content {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.event-card .event-description {
+    font-size: 1rem;
+    color: #334155;
+    line-height: 1.7;
+    margin: 0 0 1rem 0;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.event-card .event-location {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    padding: 0.5rem;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+.event-card .location-label {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.event-card .location-value {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.event-card .related-figures {
+    margin-top: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.75rem;
+    border-radius: 8px;
+}
+
+.event-card .figures-label {
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.event-card .figures-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.event-card .figure-item {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.9rem;
+    color: #0f172a;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.event-card .figure-item:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.event-card-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.view-details-btn {
+    background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.view-details-btn:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #7c3aed 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
+}
+
+.view-details-btn:active {
+    transform: translateY(0);
+}
+
+.figure-link {
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+.figure-link:hover {
+    color: #4338ca;
+    background: rgba(79, 70, 229, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .event-card {
+        padding: 1.2rem;
+    }
+
+    .event-card-header {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .event-title {
+        font-size: 1.2rem;
+    }
+
+    .event-date {
+        align-self: flex-start;
+        font-size: 0.85rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .event-description {
+        font-size: 0.95rem;
+    }
+
+    .figure-item {
+        padding: 0.25rem 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .view-details-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.7rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .event-card {
+        padding: 1rem;
+    }
+
+    .event-title {
+        font-size: 1.1rem;
+    }
+
+    .event-description {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+}

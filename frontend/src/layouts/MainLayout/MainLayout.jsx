@@ -1,9 +1,23 @@
 import { Header, Footer } from "../../components";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
+import "./MainLayout.css";
+
 function MainLayout({ children }) {
+    const { sessionType, switchSessionType } = useAuth();
+
+    // Tự động chuyển đổi session type khi vào trang thường
+    useEffect(() => {
+        if (sessionType !== 'user') {
+            console.log('Auto switching to user session in MainLayout');
+            switchSessionType('user');
+        }
+    }, [sessionType, switchSessionType]);
+
     return (
         <div className="wrapper">
             <Header />
-            <div className="content">{children}</div>
+            <main className="content">{children}</main>
             <Footer />
         </div>
     );

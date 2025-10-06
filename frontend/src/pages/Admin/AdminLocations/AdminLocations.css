@@ -1,0 +1,42 @@
+.admin-locations {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.page-header p {
+    margin: 0;
+    color: #666;
+    font-size: 1rem;
+}
+
+.page-content {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.coming-soon h2 {
+    margin: 0 0 15px 0;
+    font-size: 1.5rem;
+    color: #666;
+}
+
+.coming-soon p {
+    margin: 0;
+    color: #999;
+    font-size: 1rem;
+}
