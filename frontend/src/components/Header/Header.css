@@ -55,7 +55,7 @@
     --user-menu-item-text: #374151;
     --user-menu-item-text-hover: #1f2937;
     --user-menu-divider: #e5e7eb;
-    
+
     /* User Menu Trigger Variables */
     --user-trigger-bg: #ffffff;
     --user-trigger-bg-hover: #f8fafc;
@@ -204,8 +204,12 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .auth-buttons .btn {
@@ -247,12 +251,10 @@
     }
 
     .user-section .search-container {
-        min-width: 180px;
         max-width: 250px;
     }
 
     .user-section .search-container .search-toggle {
-        min-width: 180px;
         max-width: 250px;
     }
 }
@@ -277,12 +279,10 @@
     }
 
     .user-section .search-container {
-        min-width: 150px;
         max-width: 200px;
     }
 
     .user-section .search-container .search-toggle {
-        min-width: 150px;
         max-width: 200px;
     }
 }
@@ -303,12 +303,10 @@
     }
 
     .user-section .search-container {
-        min-width: 120px;
         max-width: 150px;
     }
 
     .user-section .search-container .search-toggle {
-        min-width: 120px;
         max-width: 150px;
     }
 }
@@ -321,12 +319,10 @@
     }
 
     .user-section .search-container {
-        min-width: 100px;
         max-width: 120px;
     }
 
     .user-section .search-container .search-toggle {
-        min-width: 100px;
         max-width: 120px;
     }
 }
@@ -334,7 +330,6 @@
 /* ==================== */
 /*     User Section    */
 /* ==================== */
-
 .user-section {
     display: flex;
     align-items: center;
@@ -344,7 +339,7 @@
 
 .user-section .search-container {
     flex: 1;
-    min-width: 200px;
+    padding: 0;
     max-width: 300px;
     position: relative;
 }
@@ -355,7 +350,6 @@
 
 .user-section .search-container .search-toggle {
     width: 100%;
-    min-width: 200px;
     max-width: 300px;
 }
 
@@ -394,12 +388,10 @@
     height: auto;
 }
 
-
 .user-menu .user-menu-trigger:hover {
     background: var(--user-trigger-bg-hover);
     box-shadow: var(--user-trigger-shadow-hover);
 }
-
 
 .user-menu .user-menu-trigger:active {
     transform: translateY(-1px);
@@ -424,7 +416,6 @@
     z-index: 2;
     order: 1;
 }
-
 
 .user-avatar img {
     width: 100%;
@@ -497,13 +488,17 @@
 }
 
 .user-menu-dropdown::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(255, 255, 255, 0.8) 100%
+    );
     z-index: -1;
 }
 
@@ -531,13 +526,17 @@
 }
 
 .user-info::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
     z-index: 1;
 }
 
@@ -628,7 +627,7 @@
 }
 
 .user-menu-item::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -693,43 +692,43 @@
         gap: 0.625rem;
         padding: 0.5rem 0.875rem;
     }
-    
+
     .user-avatar {
         width: 30px;
         height: 30px;
         font-size: 0.8125rem;
     }
-    
+
     .user-name {
         max-width: 80px;
         font-size: 0.8125rem;
     }
-    
+
     .dropdown-arrow {
         width: 15px;
         height: 15px;
     }
-    
+
     .user-menu-dropdown {
         width: 280px;
         right: -0.5rem;
         position: absolute;
     }
-    
+
     .user-info {
         padding: 1rem;
         gap: 0.875rem;
     }
-    
+
     .user-info-avatar {
         width: 44px;
         height: 44px;
     }
-    
+
     .user-info-name {
         font-size: 0.9375rem;
     }
-    
+
     .user-info-email {
         font-size: 0.75rem;
     }
@@ -741,44 +740,44 @@
         gap: 0.5rem;
         min-height: 44px;
     }
-    
+
     .user-avatar {
         width: 28px;
         height: 28px;
         font-size: 0.75rem;
     }
-    
+
     .user-name {
         max-width: 60px;
         font-size: 0.75rem;
     }
-    
+
     .dropdown-arrow {
         width: 14px;
         height: 14px;
     }
-    
+
     .user-menu-dropdown {
         width: 260px;
         right: -0.25rem;
         position: absolute;
     }
-    
+
     .user-info {
         padding: 0.875rem;
         gap: 0.75rem;
     }
-    
+
     .user-info-avatar {
         width: 40px;
         height: 40px;
         font-size: 1rem;
     }
-    
+
     .user-info-name {
         font-size: 0.875rem;
     }
-    
+
     .user-info-email {
         font-size: 0.75rem;
     }

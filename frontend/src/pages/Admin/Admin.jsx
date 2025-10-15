@@ -26,6 +26,7 @@ function Admin() {
 
     // Kiểm tra nếu đã đăng nhập và có quyền admin
     useEffect(() => {
+        authService.s;
         const checkAuth = async () => {
             try {
                 if (isAuthenticated && user) {

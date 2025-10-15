@@ -310,7 +310,7 @@ export function AuthProvider({ children }) {
                 type: AUTH_ACTIONS.LOGIN_SUCCESS,
                 payload: {
                     user: result.user,
-                    token: result.token,
+                    token: result.tokens?.accessToken,
                     sessionType: authService.getCurrentSessionType(),
                 },
             });

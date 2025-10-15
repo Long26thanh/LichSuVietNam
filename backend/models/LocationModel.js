@@ -18,7 +18,6 @@ class Location {
     // Lấy thông tin tất cả các địa điểm
     static async getAll(options = {}) {
         const { page = 1, limit = 20, search = null, type = "" } = options;
-
         const offset = (page - 1) * limit;
         const conditions = [];
         const values = [];

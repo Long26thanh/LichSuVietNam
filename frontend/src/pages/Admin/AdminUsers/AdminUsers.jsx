@@ -1,8 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import userService from '@/services/userService';
-import './AdminUsers.css';
+import React, { useEffect, useMemo, useState } from "react";
+import userService from "@/services/userService";
+import { Button, UserForm, ConfirmDialog } from "@/components";
+import ResetPasswordModal from "@/components/ResetPasswordModal/ResetPasswordModal";
+import { addUser } from "@/assets/icons";
+import { validatePassword } from "@/utils";
+import "./AdminUsers.css";
 
-const defaultFilters = { q: '', role: '', status: '' };
+const defaultFilters = { q: "", role: "", status: "" };
 
 const AdminUsers = () => {
     const [users, setUsers] = useState([]);
@@ -10,27 +14,41 @@ const AdminUsers = () => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [error, setError] = useState("");
     const [filters, setFilters] = useState(defaultFilters);
-    const [selected, setSelected] = useState([]);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [showForm, setShowForm] = useState(false);
+    const [editingUser, setEditingUser] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [showReset, setShowReset] = useState(false);
+    const [showDelete, setShowDelete] = useState(false);
+    const [targetUser, setTargetUser] = useState(null);
 
-    const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
+    const totalPages = useMemo(
+        () => Math.max(1, Math.ceil(total / limit)),
+        [total, limit]
+    );
 
     useEffect(() => {
         const load = async () => {
             setLoading(true);
-            setError('');
+            setError("");
             try {
-                const res = await userService.listUsers({ page, limit, ...filters });
+                const res = await userService.getAllUsers({
+                    page,
+                    limit,
+                    ...filters,
+                });
                 if (res?.success) {
-                    setUsers(res.data?.items || res.data || []);
-                    setTotal(res.data?.total || res.total || 0);
+                    setUsers(res.data?.data || []);
+                    setTotal(res.data?.pagination?.total || 0);
                 } else {
-                    setError(res?.message || 'Không thể tải danh sách người dùng');
+                    setError(
+                        res?.message || "Không thể tải danh sách người dùng"
+                    );
                 }
             } catch (e) {
-                setError('Có lỗi xảy ra khi tải dữ liệu');
+                setError("Có lỗi xảy ra khi tải dữ liệu");
             } finally {
                 setLoading(false);
             }
@@ -38,27 +56,61 @@ const AdminUsers = () => {
         load();
     }, [page, limit, filters, refreshKey]);
 
-    const toggleSelect = (userId) => {
-        setSelected((prev) => prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]);
-    };
-
-    const selectAllOnPage = () => {
-        const ids = users.map(u => u.id || u._id);
-        const allSelected = ids.every(id => selected.includes(id));
-        if (allSelected) {
-            setSelected(prev => prev.filter(id => !ids.includes(id)));
-        } else {
-            setSelected(prev => Array.from(new Set([...prev, ...ids])));
-        }
-    };
-
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value }));
+        setFilters((prev) => ({ ...prev, [name]: value }));
         setPage(1);
     };
 
-    const handleRefresh = () => setRefreshKey(k => k + 1);
+    const handleRefresh = () => setRefreshKey((k) => k + 1);
+
+    const openCreate = () => {
+        setEditingUser(null);
+        setShowForm(true);
+    };
+
+    const openEdit = (user) => {
+        setEditingUser(user);
+        setShowForm(true);
+    };
+
+    const closeForm = () => {
+        setShowForm(false);
+        setEditingUser(null);
+    };
+
+    const handleSubmitForm = async (payload) => {
+        setSubmitting(true);
+        try {
+            const mapped = {
+                ...payload,
+                is_active: payload.status === "active",
+            };
+            delete mapped.status;
+            console.log("Submitting user data:", mapped);
+            if (editingUser) {
+                const id = editingUser.id || editingUser._id;
+                const res = await userService.updateUser(id, mapped);
+                if (res?.success) {
+                    closeForm();
+                    handleRefresh();
+                } else {
+                    alert(res?.message || "Không thể cập nhật người dùng");
+                }
+            } else {
+                const res = await userService.createUser(mapped);
+                if (res?.success) {
+                    closeForm();
+                    handleRefresh();
+                } else {
+                    console.error("Create user failed:", res);
+                    alert(res?.message || "Không thể tạo người dùng");
+                }
+            }
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     const handleChangeRole = async (userId, role) => {
         const res = await userService.updateUserRole(userId, role);
@@ -71,13 +123,47 @@ const AdminUsers = () => {
     };
 
     const handleDelete = async (userId) => {
-        if (!window.confirm('Xóa người dùng này?')) return;
+        if (!window.confirm("Xóa người dùng này?")) return;
         const res = await userService.deleteUser(userId);
         if (res?.success) handleRefresh();
     };
 
+    const openResetPassword = (user) => {
+        setTargetUser(user);
+        setShowReset(true);
+    };
+
+    const closeResetPassword = () => {
+        setShowReset(false);
+        setTargetUser(null);
+    };
+
+    const openDeleteUser = (user) => {
+        setTargetUser(user);
+        setShowDelete(true);
+    };
+
+    const closeDeleteUser = () => {
+        setShowDelete(false);
+        setTargetUser(null);
+    };
+
+    const submitResetPassword = async ({ password }) => {
+        if (!targetUser) return;
+        setSubmitting(true);
+        const id = targetUser.id || targetUser._id;
+        const res = await userService.updateUser(id, { password });
+        setSubmitting(false);
+        if (res?.success) {
+            closeResetPassword();
+            alert("Đặt lại mật khẩu thành công");
+        } else {
+            alert(res?.message || "Không thể đặt lại mật khẩu");
+        }
+    };
+
     return (
-        <div className="admin-users">
+        <div className="user-management">
             <div className="page-header">
                 <h1>Quản lý người dùng</h1>
                 <p>Quản lý tài khoản người dùng trong hệ thống</p>
@@ -92,22 +178,31 @@ const AdminUsers = () => {
                         onChange={handleFilterChange}
                         placeholder="Tìm theo tên, email..."
                     />
-                    <select name="role" value={filters.role} onChange={handleFilterChange}>
+                    <select
+                        name="role"
+                        value={filters.role}
+                        onChange={handleFilterChange}
+                    >
                         <option value="">Tất cả vai trò</option>
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                         <option value="sa">Super Admin</option>
                     </select>
-                    <select name="status" value={filters.status} onChange={handleFilterChange}>
+                    <select
+                        name="status"
+                        value={filters.status}
+                        onChange={handleFilterChange}
+                    >
                         <option value="">Tất cả trạng thái</option>
                         <option value="active">Hoạt động</option>
-                        <option value="blocked">Bị chặn</option>
+                        <option value="blocked">Không hoạt động</option>
                     </select>
-                    <button onClick={handleRefresh}>Làm mới</button>
+                    <Button onClick={handleRefresh}>Làm mới</Button>
                 </div>
                 <div className="actions">
-                    <span>Đã chọn: {selected.length}</span>
-                    <button disabled={selected.length === 0} onClick={handleRefresh}>Cập nhật</button>
+                    <Button icon={addUser} onClick={openCreate}>
+                        Thêm người dùng
+                    </Button>
                 </div>
             </div>
 
@@ -120,10 +215,7 @@ const AdminUsers = () => {
                         <table className="users-table">
                             <thead>
                                 <tr>
-                                    <th>
-                                        <input type="checkbox" onChange={selectAllOnPage} checked={users.length > 0 && users.every(u => selected.includes(u.id || u._id))} />
-                                    </th>
-                                    <th>Họ tên</th>
+                                    <th>Người dùng</th>
                                     <th>Email</th>
                                     <th>Vai trò</th>
                                     <th>Trạng thái</th>
@@ -137,26 +229,94 @@ const AdminUsers = () => {
                                     return (
                                         <tr key={id}>
                                             <td>
-                                                <input type="checkbox" checked={selected.includes(id)} onChange={() => toggleSelect(id)} />
+                                                <div className="user-info">
+                                                    <div className="user-avatar">
+                                                        {u.avatar_url ? (
+                                                            <img
+                                                                src={
+                                                                    u.avatar_url
+                                                                }
+                                                                alt={
+                                                                    u.full_name
+                                                                }
+                                                            />
+                                                        ) : (
+                                                            <div className="user-avatar-placeholder">
+                                                                {u.full_name
+                                                                    .charAt(0)
+                                                                    .toUpperCase()}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="user-details">
+                                                        <div className="user-name">
+                                                            {u.full_name ||
+                                                                u.name ||
+                                                                u.username ||
+                                                                "—"}
+                                                        </div>
+                                                        <div className="user-username">
+                                                            @{u.username || "—"}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td>{u.full_name || u.name || u.username || '—'}</td>
                                             <td>{u.email}</td>
                                             <td>
-                                                <select value={u.role} onChange={(e) => handleChangeRole(id, e.target.value)}>
-                                                    <option value="user">User</option>
-                                                    <option value="admin">Admin</option>
-                                                    <option value="sa">Super Admin</option>
-                                                </select>
+                                                <span
+                                                    className={`role-badge ${u.role}`}
+                                                >
+                                                    {u.role === "sa"
+                                                        ? "Super Admin"
+                                                        : u.role === "admin"
+                                                        ? "Quản Trị Viên"
+                                                        : "Người Dùng"}
+                                                </span>
                                             </td>
                                             <td>
-                                                <select value={u.status || 'active'} onChange={(e) => handleChangeStatus(id, e.target.value)}>
-                                                    <option value="active">Hoạt động</option>
-                                                    <option value="blocked">Bị chặn</option>
-                                                </select>
+                                                {(() => {
+                                                    const isActive =
+                                                        u.is_active ===
+                                                        undefined
+                                                            ? true
+                                                            : !!u.is_active;
+                                                    const statusKey = isActive
+                                                        ? "active"
+                                                        : "blocked";
+                                                    return (
+                                                        <span
+                                                            className={`status-badge ${statusKey}`}
+                                                        >
+                                                            {isActive
+                                                                ? "Hoạt Động"
+                                                                : "Đã Khóa"}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
-                                            <td>{u.created_at ? new Date(u.created_at).toLocaleDateString('vi-VN') : '—'}</td>
+                                            <td>
+                                                {u.created_at
+                                                    ? new Date(
+                                                          u.created_at
+                                                      ).toLocaleDateString(
+                                                          "vi-VN"
+                                                      )
+                                                    : "—"}
+                                            </td>
                                             <td className="row-actions">
-                                                <button onClick={() => handleDelete(id)} className="danger">Xóa</button>
+                                                <Button
+                                                    onClick={() => openEdit(u)}
+                                                >
+                                                    Sửa
+                                                </Button>
+                                                <Button
+                                                    onClick={() =>
+                                                        openResetPassword(u)
+                                                    }
+                                                >
+                                                    Đặt lại mật khẩu
+                                                </Button>
+                                                <Button onClick={() => openDeleteUser(u)}>Xóa</Button>
                                             </td>
                                         </tr>
                                     );
@@ -168,20 +328,89 @@ const AdminUsers = () => {
             </div>
 
             <div className="pagination">
-                <div className="page-info">Trang {page}/{totalPages} • Tổng {total}</div>
+                <div className="page-info">
+                    Trang {page}/{totalPages} • Tổng {total}
+                </div>
                 <div className="page-controls">
-                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Trước</button>
-                    <select value={page} onChange={(e) => setPage(parseInt(e.target.value, 10))}>
+                    <button
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                    >
+                        Trước
+                    </button>
+                    <select
+                        value={page}
+                        onChange={(e) => setPage(parseInt(e.target.value, 10))}
+                    >
                         {Array.from({ length: totalPages }).map((_, i) => (
-                            <option key={i + 1} value={i + 1}>{i + 1}</option>
+                            <option key={i + 1} value={i + 1}>
+                                {i + 1}
+                            </option>
                         ))}
                     </select>
-                    <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Sau</button>
-                    <select value={limit} onChange={(e) => { setLimit(parseInt(e.target.value, 10)); setPage(1); }}>
-                        {[10, 20, 50].map(n => <option key={n} value={n}>{n}/trang</option>)}
+                    <button
+                        onClick={() =>
+                            setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={page === totalPages}
+                    >
+                        Sau
+                    </button>
+                    <select
+                        value={limit}
+                        onChange={(e) => {
+                            setLimit(parseInt(e.target.value, 10));
+                            setPage(1);
+                        }}
+                    >
+                        {[10, 20, 50].map((n) => (
+                            <option key={n} value={n}>
+                                {n}/trang
+                            </option>
+                        ))}
                     </select>
                 </div>
             </div>
+            {showForm && (
+                <UserForm
+                    mode={editingUser ? "edit" : "create"}
+                    initialValues={editingUser}
+                    onSubmit={handleSubmitForm}
+                    onCancel={closeForm}
+                    loading={submitting}
+                />
+            )}
+            {showReset && (
+                <ResetPasswordModal
+                    user={targetUser}
+                    onSubmit={submitResetPassword}
+                    onCancel={closeResetPassword}
+                    loading={submitting}
+                />
+            )}
+            <ConfirmDialog
+                open={showDelete}
+                title="Xác nhận xóa người dùng"
+                message={`Bạn có chắc muốn xóa tài khoản "${targetUser?.full_name || targetUser?.username || "người dùng"}"? Hành động này không thể hoàn tác.`}
+                confirmText="Xóa"
+                cancelText="Hủy"
+                danger
+                loading={submitting}
+                onCancel={closeDeleteUser}
+                onConfirm={async () => {
+                    if (!targetUser) return;
+                    setSubmitting(true);
+                    const id = targetUser.id || targetUser._id;
+                    const res = await userService.deleteUser(id);
+                    setSubmitting(false);
+                    if (res?.success) {
+                        closeDeleteUser();
+                        handleRefresh();
+                    } else {
+                        alert(res?.message || "Không thể xóa người dùng");
+                    }
+                }}
+            />
         </div>
     );
 };

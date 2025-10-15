@@ -71,7 +71,7 @@ const UserDropdown = ({
             ref={dropdownRef}
         >
             {/* Notifications (only for admin variant) */}
-            {showNotifications && variant === "admin" && (
+            {showNotifications && (
                 <div className="notification-menu">
                     <button
                         className="notification-btn"
@@ -164,22 +164,28 @@ const UserDropdown = ({
                                     <p className="user-email">
                                         {user?.email || "user@example.com"}
                                     </p>
-                                    <span className="user-role">
-                                        {variant === "admin"
-                                            ? "Administrator"
-                                            : "User"}
-                                    </span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="dropdown-menu">
                             {menuItems.map((item) => {
-                                if (item.type === 'divider') {
-                                    return <div key={item.key || Math.random()} className="dropdown-divider"></div>;
+                                if (item.type === "divider") {
+                                    return (
+                                        <div
+                                            key={item.key || Math.random()}
+                                            className="dropdown-divider"
+                                        ></div>
+                                    );
                                 }
-                                const badge = item.badge ?? (item.key === 'notifications' ? unreadCount : undefined);
-                                const classNames = `dropdown-item${item.danger ? ' logout' : ''}`;
+                                const badge =
+                                    item.badge ??
+                                    (item.key === "notifications"
+                                        ? unreadCount
+                                        : undefined);
+                                const classNames = `dropdown-item${
+                                    item.danger ? " logout" : ""
+                                }`;
                                 return (
                                     <button
                                         key={item.key || item.label}
@@ -187,11 +193,17 @@ const UserDropdown = ({
                                         onClick={() => handleItemClick(item)}
                                     >
                                         {item.icon && (
-                                            <span className="item-icon">{item.icon}</span>
+                                            <span className="item-icon">
+                                                {item.icon}
+                                            </span>
                                         )}
-                                        <span className="item-text">{item.label}</span>
+                                        <span className="item-text">
+                                            {item.label}
+                                        </span>
                                         {badge > 0 && (
-                                            <span className="item-badge">{badge}</span>
+                                            <span className="item-badge">
+                                                {badge}
+                                            </span>
                                         )}
                                     </button>
                                 );

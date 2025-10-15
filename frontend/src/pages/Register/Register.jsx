@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { validateUsername, validateEmail, validatePassword } from "@/utils";
+import { authService, userService } from "@/services";
 import config from "@/config";
 import "./Register.css";
 
 function Register() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, login } = useAuth();
     const [formData, setFormData] = useState({
-        fullName: "",
+        username: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -24,10 +26,7 @@ function Register() {
         const checkAuth = async () => {
             if (isAuthenticated && user) {
                 // Đã đăng nhập, chuyển hướng dựa trên role
-                if (user.role === 'admin') {
-                    // Nếu là admin, chuyển đến admin dashboard
-                    navigate(config.routes.adminDashboard, { replace: true });
-                } else {
+                if (user.role === "user") {
                     // Nếu là user thường, chuyển đến trang chủ
                     navigate(config.routes.home, { replace: true });
                 }
@@ -39,15 +38,15 @@ function Register() {
         checkAuth();
     }, [isAuthenticated, user, navigate]);
 
-    // Add class to body when component mounts
+    // Thêm class vào body khi component mount
     useEffect(() => {
         if (!isCheckingAuth) {
-            document.body.classList.add('register-open');
+            document.body.classList.add("register-open");
         }
-        
-        // Cleanup function to remove class when component unmounts
+
+        // Dọn dẹp class khi component unmount
         return () => {
-            document.body.classList.remove('register-open');
+            document.body.classList.remove("register-open");
         };
     }, [isCheckingAuth]);
 
@@ -58,7 +57,7 @@ function Register() {
             [name]: value,
         }));
 
-        // Clear error when user starts typing
+        // Xóa lỗi khi người dùng sửa input
         if (errors[name]) {
             setErrors((prev) => ({
                 ...prev,
@@ -70,27 +69,35 @@ function Register() {
     const validateForm = () => {
         const newErrors = {};
 
-        if (!formData.fullName.trim()) {
-            newErrors.fullName = "Họ và tên là bắt buộc";
+        const { username, email, password, confirmPassword } = formData;
+        if (!validateUsername(username)) {
+            newErrors.username =
+                "Tên người dùng chỉ chứa chữ cái, số, gạch dưới và từ 3-30 ký tự";
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!formData.email.trim()) {
-            newErrors.email = "Email là bắt buộc";
-        } else if (!emailRegex.test(formData.email)) {
-            newErrors.email = "Email không hợp lệ";
+        if (username && userService.getUserByUsername(username)) {
+            newErrors.username = "Tên người dùng đã tồn tại";
         }
 
-        if (!formData.password) {
-            newErrors.password = "Mật khẩu là bắt buộc";
-        } else if (formData.password.length < 6) {
-            newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
+        if (!validateEmail(email)) {
+            newErrors.email = "Vui lòng nhập email hợp lệ";
         }
 
-        if (!formData.confirmPassword) {
-            newErrors.confirmPassword = "Xác nhận mật khẩu là bắt buộc";
-        } else if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = "Mật khẩu không khớp";
+        if (email && userService.getUserByEmail(email)) {
+            newErrors.email = "Email đã được sử dụng";
+        }
+
+        if (!validatePassword(password)) {
+            newErrors.password =
+                "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số";
+        }
+
+        if (confirmPassword !== password) {
+            newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
+        }
+
+        if (confirmPassword.trim() === "") {
+            newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
         }
 
         return newErrors;
@@ -107,17 +114,23 @@ function Register() {
 
         setIsSubmitting(true);
         try {
-            // Giả lập API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            alert(`Đăng ký thành công cho ${formData.fullName}!`);
-
-            // Reset form
-            setFormData({
-                fullName: "",
-                email: "",
-                password: "",
-                confirmPassword: "",
+            await authService.register({
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                full_name: formData.username,
             });
+
+            // Sử dụng login từ AuthContext thay vì trực tiếp từ authService
+            await login(
+                {
+                    username: formData.username,
+                    password: formData.password,
+                },
+                "user"
+            );
+
+            navigate(config.routes.home, { replace: true });
         } catch (error) {
             console.error("Lỗi đăng ký:", error);
             alert("Có lỗi xảy ra khi đăng ký. Vui lòng thử lại!");
@@ -153,24 +166,24 @@ function Register() {
 
                 <form className="register-form" onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="fullName" className="form-label">
-                            Họ và tên *
+                        <label htmlFor="username" className="form-label">
+                            Tên người dùng *
                         </label>
                         <input
                             type="text"
-                            id="fullName"
-                            name="fullName"
-                            value={formData.fullName}
+                            id="username"
+                            name="username"
+                            value={formData.username}
                             onChange={handleChange}
                             className={`form-input ${
-                                errors.fullName ? "input-error" : ""
+                                errors.username ? "input-error" : ""
                             }`}
-                            placeholder="Nhập họ và tên của bạn"
+                            placeholder="Nhập tên người dùng của bạn"
                             autoComplete="name"
                         />
-                        {errors.fullName && (
+                        {errors.username && (
                             <span className="error-message">
-                                {errors.fullName}
+                                {errors.username}
                             </span>
                         )}
                     </div>
@@ -180,7 +193,6 @@ function Register() {
                             Email *
                         </label>
                         <input
-                            type="email"
                             id="email"
                             name="email"
                             value={formData.email}

@@ -43,140 +43,236 @@ class UserController {
     // [Get] /users - Lấy danh sách người dùng với phân trang và lọc
     async getAllUsers(req, res) {
         try {
-            const { page = 1, limit = 10, role, is_active, search } = req.query;
-            const offset = (page - 1) * limit;
-            const conditions = [];
-            const values = [];
-            let index = 1;
+            const { page = 1, limit = 10, q, role, status } = req.query;
 
-            // Xây dựng điều kiện truy vấn dựa trên các tham số
-            if (role) {
-                conditions.push(`role = $${index}`);
-                values.push(role);
-                index++;
+            // Lấy role của người dùng hiện tại từ req.user (đã được set bởi middleware auth)
+            if (!req.user || !req.user.role) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Không tìm thấy thông tin xác thực người dùng",
+                });
             }
-            // is_active có thể là true, false hoặc undefined
-            if (is_active !== undefined) {
-                conditions.push(`is_active = $${index}`);
-                values.push(is_active === "true" || is_active === true);
-                index++;
-            }
-            // Tìm kiếm theo username, email hoặc full_name
-            if (search) {
-                conditions.push(
-                    `(username ILIKE $${index} OR email ILIKE $${index} OR full_name ILIKE $${index})`
-                );
-                values.push(`%${search}%`);
-                index++;
-            }
-            const whereClause =
-                conditions.length > 0
-                    ? `WHERE ${conditions.join(" AND ")}`
-                    : "";
-            values.push(limit, offset);
-            const result = await query(
-                `
-                SELECT id, username, email, full_name, avatar_url, role, is_active, bio, created_at, updated_at, last_login
-                FROM users
-                ${whereClause}
-                ORDER BY created_at DESC
-                LIMIT $${index} OFFSET $${index + 1}
-            `,
-                values
-            );
-            const countResult = await query(
-                `
-                SELECT COUNT(*) AS total
-                FROM users
-                ${whereClause}
-            `,
-                values.slice(0, -2) // Loại bỏ limit và offset
-            );
+
+            const options = {
+                page,
+                limit,
+                search: q,
+                role,
+                // Map status query to boolean is_active. Accept both "inactive" and "blocked" as false for compatibility
+                is_active:
+                    status === "active"
+                        ? true
+                        : ["inactive", "blocked", "disabled"].includes(
+                              status || ""
+                          )
+                        ? false
+                        : undefined,
+                requesterRole: req.user.role, // Thêm role của người gửi request
+            };
+            const result = await User.getAllUsers(options);
             return res.json({
                 success: true,
-                data: result.rows.map((row) =>
-                    new User(row).getPublicProfile()
-                ),
-                pagination: {
-                    total: countResult.rows[0].total,
-                    page: parseInt(page, 10),
-                    limit: parseInt(limit, 10),
-                    totalPages: Math.ceil(countResult.rows[0].total / limit),
-                },
+                message: "Lấy danh sách người dùng thành công",
+                data: result,
             });
         } catch (error) {
             console.error("Lỗi lấy danh sách người dùng:", error);
-            return res.status(500).json({ error: "Lỗi server" });
+            return res.status(500).json({
+                success: false,
+                error: "Lỗi server",
+                message: error.message,
+            });
         }
     }
-    // // [Get] /users/me - Lấy thông tin người dùng hiện tại
-    // async getProfile(req, res) {
-    //     try {
-    //         const user = req.user;
-    //         if (!user) {
-    //             return res.status(404).json({
-    //                 success: false,
-    //                 message: "Người dùng không tồn tại",
-    //             });
-    //         }
 
-    //         const userResponse = {
-    //             id: user.id,
-    //             username: user.username,
-    //             email: user.email,
-    //             full_name: user.full_name,
-    //             role: user.role,
-    //             avatar_url: user.avatar_url,
-    //             last_login: user.last_login,
-    //         };
+    // [GET] /users/:id - Lấy thông tin người dùng theo ID
+    async getUserById(req, res) {
+        try {
+            const userId = req.params.id;
+            const user = await User.findById(userId);
 
-    //         // Kiểm tra nếu có token trong header Authorization
-    //         let accessToken = null;
-    //         const authHeader = req.headers["authorization"];
-    //         if (authHeader && authHeader.startsWith("Bearer ")) {
-    //             accessToken = authHeader.split(" ")[1];
-    //         }
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Không tìm thấy người dùng",
+                });
+            }
 
-    //         const response = {
-    //             success: true,
-    //             message: "Lấy thông tin người dùng thành công",
-    //             user: userResponse,
-    //         };
+            // Loại bỏ password_hash và các thông tin nhạy cảm
+            const { password_hash, ...userInfo } = user;
 
-    //         // Nếu có token, thêm vào phản hồi
-    //         if (accessToken) {
-    //             response.accessToken = accessToken;
-    //         }
+            return res.status(200).json({
+                success: true,
+                data: userInfo,
+            });
+        } catch (error) {
+            console.error("Lỗi khi lấy thông tin người dùng theo ID:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Lỗi server khi lấy thông tin người dùng",
+            });
+        }
+    }
 
-    //         res.json(response);
-    //     } catch (error) {
-    //         console.error("Lỗi lấy thông tin người dùng:", error);
-    //         return res.status(500).json({
-    //             success: false,
-    //             message: "Lỗi server",
-    //             error: error.message,
-    //         });
-    //     }
-    // }
+    // [GET] /users/username/:username - Lấy thông tin người dùng theo username
+    async getUserByUsername(req, res) {
+        try {
+            const username = req.params.username;
+            const user = await User.findByUsername(username);
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Không tìm thấy người dùng",
+                });
+            }
+
+            // Loại bỏ password_hash và các thông tin nhạy cảm
+            const { password_hash, ...userInfo } = user;
+
+            return res.status(200).json({
+                success: true,
+                data: userInfo,
+            });
+        } catch (error) {
+            console.error(
+                "Lỗi khi lấy thông tin người dùng theo username:",
+                error
+            );
+            return res.status(500).json({
+                success: false,
+                message: "Lỗi server khi lấy thông tin người dùng",
+            });
+        }
+    }
+
+    // [GET] /users/email/:email - Lấy thông tin người dùng theo email
+    async getUserByEmail(req, res) {
+        try {
+            const email = req.params.email;
+            const user = await User.findByEmail(email);
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Không tìm thấy người dùng",
+                });
+            }
+
+            // Loại bỏ password_hash và các thông tin nhạy cảm
+            const { password_hash, ...userInfo } = user;
+
+            return res.status(200).json({
+                success: true,
+                data: userInfo,
+            });
+        } catch (error) {
+            console.error(
+                "Lỗi khi lấy thông tin người dùng theo email:",
+                error
+            );
+            return res.status(500).json({
+                success: false,
+                message: "Lỗi server khi lấy thông tin người dùng",
+            });
+        }
+    }
+
+    // [POST] /users - Tạo người dùng mới
+    async create(req, res) {
+        try {
+            const {
+                username,
+                email,
+                phone,
+                birthday,
+                address,
+                password,
+                full_name,
+                avatar_url,
+                role,
+                is_active,
+                bio,
+            } = req.body;
+
+            // Kiểm tra các trường bắt buộc
+            if (!username || !email || !password || !full_name) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Vui lòng cung cấp đầy đủ thông tin",
+                });
+            }
+
+            // Convert empty birthday string to null
+            const processedBirthday = birthday === "" ? null : birthday;
+
+            // Kiểm tra xem username hoặc email đã tồn tại chưa
+            const existingUserByUsername = await User.findByUsername(username);
+            if (existingUserByUsername) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Tên đăng nhập đã được sử dụng",
+                });
+            }
+
+            const existingUserByEmail = await User.findByEmail(email);
+            if (existingUserByEmail) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Email đã được sử dụng",
+                });
+            }
+
+            // Tạo người dùng mới
+            const newUser = await User.create({
+                username,
+                email,
+                phone,
+                birthday: processedBirthday,
+                address,
+                password,
+                full_name,
+                avatar_url,
+                role: role || "user",
+                is_active: is_active !== undefined ? is_active : true,
+                bio,
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: "Tạo người dùng thành công",
+                data: {
+                    id: newUser.id,
+                    username: newUser.username,
+                    email: newUser.email,
+                    full_name: newUser.full_name,
+                    role: newUser.role,
+                    is_active: newUser.is_active,
+                    created_at: newUser.created_at,
+                },
+            });
+        } catch (error) {
+            console.error("Lỗi khi tạo người dùng:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Lỗi server khi tạo người dùng",
+                error: error.message,
+            });
+        }
+    }
 
     // [PUT] /users/me - Cập nhật thông tin người dùng hiện tại
-    async updateProfile(req, res) {
+    async update(req, res) {
         try {
-            const userId = req.user.id;
+            const userId = req.params?.id || req.user?.id || req.body.id;
             const updateData = req.body;
+            console.log("Update data received:", updateData);
 
-            // Remove sensitive fields that shouldn't be updated via this endpoint
+            // Loại bỏ các trường không được phép cập nhật
             delete updateData.id;
-            delete updateData.password;
-            delete updateData.password_hash;
-            delete updateData.role;
             delete updateData.created_at;
-            delete updateData.updated_at;
 
-            // Add updated_at timestamp
-            updateData.updated_at = new Date();
-
-            // Find user and update
+            // Kiểm tra xem người dùng có tồn tại không
             const user = await User.findById(userId);
             if (!user) {
                 return res.status(404).json({
@@ -185,10 +281,10 @@ class UserController {
                 });
             }
 
-            // Update user data
+            // Cập nhật người dùng
             const updatedUser = await user.update(updateData);
 
-            // Return updated user info (without sensitive data)
+            // Trả về thông tin người dùng đã được cập nhật (loại bỏ các trường nhạy cảm)
             const userResponse = {
                 id: updatedUser.id,
                 username: updatedUser.username,
@@ -200,6 +296,7 @@ class UserController {
                 location: updatedUser.location,
                 birth_date: updatedUser.birth_date,
                 role: updatedUser.role,
+                is_active: updatedUser.is_active,
                 updated_at: updatedUser.updated_at,
             };
 
@@ -213,6 +310,37 @@ class UserController {
             return res.status(500).json({
                 success: false,
                 message: "Lỗi server khi cập nhật thông tin",
+                error: error.message,
+            });
+        }
+    }
+
+    // [DELETE] /users/:id - Xóa người dùng theo ID
+    async delete(req, res) {
+        try {
+            const userId = req.params.id;
+
+            // Kiểm tra xem người dùng có tồn tại không
+            const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Người dùng không tồn tại",
+                });
+            }
+
+            // Xóa người dùng
+            await User.delete(userId);
+
+            res.json({
+                success: true,
+                message: "Xóa người dùng thành công",
+            });
+        } catch (error) {
+            console.error("Lỗi xóa người dùng:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Lỗi server khi xóa người dùng",
                 error: error.message,
             });
         }

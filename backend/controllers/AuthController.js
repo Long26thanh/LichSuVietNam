@@ -47,7 +47,6 @@ export const login = async (req, res) => {
             message: "Đăng nhập thành công",
             user: user.getPublicProfile(),
             tokens,
-            expiresIn: 60 * 60 * 1000, // 1 hour in milliseconds
         });
     } catch (error) {
         console.error("Lỗi đăng nhập:", error);
@@ -58,69 +57,26 @@ export const login = async (req, res) => {
     }
 };
 
-// [Post] /auth/refresh-token - Làm mới token
-export const refreshToken = async (req, res) => {
-    try {
-        const { refreshToken } = req.body;
-        
-        if (!refreshToken) {
-            return res.status(401).json({
-                success: false,
-                message: "Refresh token không được cung cấp",
-            });
-        }
-
-        const { jwtRefresh } = getServerConfig();
-        
-        try {
-            const decoded = jwt.verify(refreshToken, jwtRefresh);
-            
-            if (decoded.type !== "refresh") {
-                return res.status(401).json({
-                    success: false,
-                    message: "Token không hợp lệ",
-                });
-            }
-
-            // Kiểm tra user còn tồn tại và active
-            const user = await User.findById(decoded.id);
-            if (!user || user.is_active !== true) {
-                return res.status(401).json({
-                    success: false,
-                    message: "Người dùng không tồn tại hoặc đã bị vô hiệu hóa",
-                });
-            }
-
-            // Tạo token mới
-            const tokens = generateTokens(user.id);
-            
-            res.json({
-                success: true,
-                message: "Làm mới token thành công",
-                tokens,
-                expiresIn: 60 * 60 * 1000, // 1 hour in milliseconds
-            });
-        } catch (tokenError) {
-            return res.status(401).json({
-                success: false,
-                message: "Refresh token không hợp lệ hoặc đã hết hạn",
-            });
-        }
-    } catch (error) {
-        console.error("Lỗi làm mới token:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Lỗi server khi làm mới token",
-        });
-    }
-};
-
 export const logout = async (req, res) => {
     try {
-        // Clear cookies if using cookie-based auth
-        res.clearCookie("accessToken");
-        res.clearCookie("refreshToken");
-        
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                message: "Token không hợp lệ",
+            });
+        }
+        const token = authHeader.split(" ")[1];
+        const { jwtSecret } = getServerConfig();
+        const decoded = jwt.verify(token, jwtSecret);
+
+        if (!decoded || !decoded.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Token không hợp lệ",
+            });
+        }
+        // Ở đây ta không cần lưu trạng thái token đã bị thu hồi vì ta không sử dụng refresh token
         return res.json({
             success: true,
             message: "Đăng xuất thành công",
@@ -130,6 +86,82 @@ export const logout = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Lỗi server khi đăng xuất",
+        });
+    }
+};
+
+// [Post] /auth/register - Đăng ký
+export const register = async (req, res) => {
+    try {
+        const { username, email, password, full_name } = req.body;
+
+        // Kiểm tra các trường bắt buộc
+        if (!username || !email || !password || !full_name) {
+            return res.status(400).json({
+                success: false,
+                message: "Vui lòng cung cấp đầy đủ thông tin",
+            });
+        }
+
+        // Tạo người dùng mới
+        const newUser = await User.create({
+            username,
+            email,
+            password,
+            full_name,
+        });
+        return res.status(201).json({
+            success: true,
+            message: "Tạo người dùng thành công",
+            data: {
+                id: newUser.id,
+                username: newUser.username,
+                email: newUser.email,
+                full_name: newUser.full_name,
+                role: newUser.role,
+                is_active: newUser.is_active,
+                created_at: newUser.created_at,
+            },
+        });
+    } catch (error) {
+        console.error("Lỗi khi tạo người dùng:", error);
+        return res.status(500).json({
+            success: false,
+            error: "Lỗi server",
+            message: error.message,
+        });
+    }
+};
+
+export const refreshToken = (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                message: "Token không hợp lệ",
+            });
+        }
+        const token = authHeader.split(" ")[1];
+        const { jwtSecret } = getServerConfig();
+        const decoded = jwt.verify(token, jwtSecret);
+        if (!decoded || !decoded.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Token không hợp lệ",
+            });
+        }
+        const tokens = generateTokens(decoded.userId);
+        return res.json({
+            success: true,
+            message: "Làm mới token thành công",
+            tokens,
+        });
+    } catch (error) {
+        console.error("Lỗi làm mới token:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi server khi làm mới token",
         });
     }
 };

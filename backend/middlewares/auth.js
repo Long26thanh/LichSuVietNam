@@ -78,7 +78,7 @@ export const requireAdmin = (req, res, next) => {
             message: "Vui lòng đăng nhập",
         });
     }
-    if (req.user.role !== "admin") {
+    if (req.user.role !== "admin" && req.user.role !== "sa") {
         return res.status(403).json({
             success: false,
             message: "Không có quyền truy cập",

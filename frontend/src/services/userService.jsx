@@ -14,7 +14,12 @@ const apiClient = axios.create({
 // Add interceptor to include auth token
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem("auth_token");
+        let token = null;
+        if (localStorage.getItem("session_type") === "admin") {
+            token = localStorage.getItem("admin_auth_token");
+        } else {
+            token = localStorage.getItem("auth_token");
+        }
         if (token) {
             config.headers["Authorization"] = `Bearer ${token}`;
         }
@@ -32,8 +37,12 @@ class UserService {
      */
     async getCurrentUser() {
         try {
-            const localUser = JSON.parse(localStorage.getItem("user"));
-
+            let localUser = null;
+            if (localStorage.getItem("session_type") === "admin") {
+                localUser = JSON.parse(localStorage.getItem("admin_user"));
+            } else {
+                localUser = JSON.parse(localStorage.getItem("user"));
+            }
             try {
                 const response = await apiClient.get("/me");
 
@@ -61,7 +70,7 @@ class UserService {
                 };
             } catch (error) {
                 console.error(
-                    "Error fetching current user from server:",
+                    "Lỗi khi lấy thông tin người dùng từ server:",
                     error
                 );
                 // Nếu có dữ liệu local, trả về dữ liệu đó trong trường hợp lỗi
@@ -159,15 +168,28 @@ class UserService {
     // =========================
     // Admin user management APIs
     // =========================
-    async listUsers({ page = 1, limit = 10, q = '', role = '', status = '' } = {}) {
+    async getAllUsers(params) {
         try {
-            const response = await apiClient.get('/', {
-                params: { page, limit, q, role, status }
+            const filteredParams = {};
+            if (params) {
+                Object.keys(params).forEach((key) => {
+                    const value = params[key];
+                    if (value !== null && value !== undefined && value !== "") {
+                        filteredParams[key] = value;
+                    }
+                });
+            }
+
+            const response = await apiClient.get("/", {
+                params: filteredParams,
             });
             return response.data;
         } catch (error) {
-            console.error('Error listing users:', error);
-            return { success: false, message: 'Không thể tải danh sách người dùng' };
+            console.error("Error fetching users:", error);
+            return {
+                success: false,
+                message: "Không thể tải danh sách người dùng",
+            };
         }
     }
 
@@ -176,48 +198,71 @@ class UserService {
             const response = await apiClient.get(`/${userId}`);
             return response.data;
         } catch (error) {
-            console.error('Error fetching user by id:', error);
-            return { success: false, message: 'Không thể tải thông tin người dùng' };
+            console.error("Error fetching user by id:", error);
+            return {
+                success: false,
+                message: "Không thể tải thông tin người dùng",
+            };
         }
     }
 
-    async createUser(data) {
+    async getUserByUsername(username) {
         try {
-            const response = await apiClient.post('/', data);
+            const response = await apiClient.get(`/username/${username}`);
             return response.data;
         } catch (error) {
-            console.error('Error creating user:', error);
-            return { success: false, message: 'Không thể tạo người dùng' };
+            console.error("Error fetching user by username:", error);
+            return {
+                success: false,
+                message: "Không thể tải thông tin người dùng",
+            };
+        }
+    }
+
+    async getUserByEmail(email) {
+        try {
+            const response = await apiClient.get(`/email/${email}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching user by email:", error);
+            return {
+                success: false,
+                message: "Không thể tải thông tin người dùng",
+            };
+        }
+    }
+
+    async createUser(userData) {
+        try {
+            console.log(userData);
+            const response = await apiClient.post("/create", userData);
+            return response.data;
+        } catch (error) {
+            console.error("Error creating user:", error);
+            return { success: false, message: "Không thể tạo người dùng" };
         }
     }
 
     async updateUser(userId, data) {
         try {
+            console.log("Updating user:", userId, data);
             const response = await apiClient.put(`/${userId}`, data);
             return response.data;
         } catch (error) {
-            console.error('Error updating user:', error);
-            return { success: false, message: 'Không thể cập nhật người dùng' };
-        }
-    }
-
-    async deleteUser(userId) {
-        try {
-            const response = await apiClient.delete(`/${userId}`);
-            return response.data;
-        } catch (error) {
-            console.error('Error deleting user:', error);
-            return { success: false, message: 'Không thể xóa người dùng' };
+            console.error("Error updating user:", error);
+            return { success: false, message: "Không thể cập nhật người dùng" };
         }
     }
 
     async updateUserStatus(userId, status) {
         try {
-            const response = await apiClient.patch(`/${userId}/status`, { status });
+            const response = await apiClient.patch(`/${userId}/status`, {
+                status,
+            });
             return response.data;
         } catch (error) {
-            console.error('Error updating user status:', error);
-            return { success: false, message: 'Không thể cập nhật trạng thái' };
+            console.error("Error updating user status:", error);
+            return { success: false, message: "Không thể cập nhật trạng thái" };
         }
     }
 
@@ -226,8 +271,18 @@ class UserService {
             const response = await apiClient.patch(`/${userId}/role`, { role });
             return response.data;
         } catch (error) {
-            console.error('Error updating user role:', error);
-            return { success: false, message: 'Không thể cập nhật vai trò' };
+            console.error("Error updating user role:", error);
+            return { success: false, message: "Không thể cập nhật vai trò" };
+        }
+    }
+
+    async deleteUser(userId) {
+        try {
+            const response = await apiClient.delete(`/${userId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            return { success: false, message: "Không thể xóa người dùng" };
         }
     }
 }

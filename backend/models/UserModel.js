@@ -13,13 +13,134 @@ class User {
         this.full_name = userData?.full_name;
         this.avatar_url = userData?.avatar_url;
         this.role = userData?.role || "user";
-        this.is_active = userData?.is_active || true;
+        // Preserve explicit false; only default to true when undefined/null
+        this.is_active =
+            userData?.is_active === undefined || userData?.is_active === null
+                ? true
+                : userData.is_active;
         this.bio = userData?.bio;
         this.created_at = userData?.created_at;
         this.updated_at = userData?.updated_at;
         this.last_login = userData?.last_login;
     }
 
+    static async getAllUsers(options = {}) {
+        const {
+            page = 1,
+            limit = 20,
+            role = null,
+            is_active = undefined,
+            search = null,
+        } = options;
+        const offset = (page - 1) * limit;
+        const conditions = [];
+        const values = [];
+        let index = 1;
+
+        // Xây dựng điều kiện truy vấn dựa trên các tham số
+        if (role) {
+            conditions.push(`role = $${index}`);
+            values.push(role);
+            index++;
+        }
+
+        if (is_active !== undefined && is_active !== null) {
+            conditions.push(`is_active = $${index}`);
+            values.push(is_active);
+            index++;
+        }
+        if (search) {
+            conditions.push(
+                `(username ILIKE $${index} OR email ILIKE $${index} OR full_name ILIKE $${index})`
+            );
+            values.push(`%${search}%`);
+            index++;
+        }
+
+        const whereClause =
+            conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+        values.push(limit, offset);
+
+        const result = await query(
+            `
+            SELECT id, username, email, full_name, avatar_url, role, is_active, bio, created_at, updated_at, last_login
+            FROM users
+            ${whereClause}
+            ORDER BY created_at DESC
+            LIMIT $${index} OFFSET $${index + 1}
+        `,
+            values
+        );
+
+        const countResult = await query(
+            `
+            SELECT COUNT(*) AS total
+            FROM users
+            ${whereClause}
+        `,
+            values.slice(0, -2)
+        );
+
+        return {
+            data: result.rows.map((row) => new User(row).getPublicProfile()),
+            pagination: {
+                total: countResult.rows[0].total,
+                page: parseInt(page, 10),
+                limit: parseInt(limit, 10),
+                totalPages: Math.ceil(countResult.rows[0].total / limit),
+            },
+        };
+    }
+
+    static async create(userData) {
+        try {
+            const {
+                username,
+                email,
+                phone = null,
+                birthday = null,
+                address = null,
+                password,
+                full_name = null,
+                avatar_url = null,
+                role = "user",
+                is_active = true,
+                bio = null,
+            } = userData;
+
+            // Convert empty birthday string to null
+            const processedBirthday = birthday === "" ? null : birthday;
+
+            // Hash mật khẩu
+            const password_hash = await bcrypt.hash(password, 10);
+
+            // Chèn người dùng mới vào cơ sở dữ liệu
+            const result = await query(
+                `
+                INSERT INTO users (username, email, phone, birthday, address, password_hash, full_name, avatar_url, role, is_active, bio)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                RETURNING *
+            `,
+                [
+                    username,
+                    email,
+                    phone,
+                    processedBirthday,
+                    address,
+                    password_hash,
+                    full_name,
+                    avatar_url,
+                    role,
+                    is_active,
+                    bio,
+                ]
+            );
+
+            return new User(result.rows[0]);
+        } catch (error) {
+            throw new Error(`Lỗi khi tạo người dùng: ${error.message}`);
+        }
+    }
     // Cập nhật thông tin người dùng
     async update(updateData) {
         try {
@@ -39,8 +160,11 @@ class User {
             // Duyệt qua các trường trong updateData để xây dựng câu truy vấn
             for (const [key, value] of Object.entries(updateData)) {
                 if (value !== undefined && key !== "id") {
+                    // Convert empty birthday string to null
+                    const processedValue =
+                        key === "birthday" && value === "" ? null : value;
                     fields.push(`${key} = $${index}`);
-                    values.push(value);
+                    values.push(processedValue);
                     index++;
                 }
             }
@@ -63,6 +187,20 @@ class User {
             throw new Error(`Lỗi khi cập nhật người dùng: ${error.message}`);
         }
     }
+
+    // Xóa người dùng theo ID
+    static async delete(id) {
+        try {
+            const result = await query(
+                `DELETE FROM users WHERE id = $1 RETURNING *`,
+                [id]
+            );
+            return result.rows[0] ? new User(result.rows[0]) : null;
+        } catch (error) {
+            throw new Error(`Lỗi khi xóa người dùng: ${error.message}`);
+        }
+    }
+
     // Cập nhật thời gian đăng nhập cuối cùng
     async updateLastLogin() {
         try {
@@ -123,6 +261,19 @@ class User {
             return res.rows[0] ? new User(res.rows[0]) : null;
         } catch (error) {
             console.error("Lỗi khi tìm user theo ID:", error);
+            return null;
+        }
+    }
+
+    // Tìm người dùng theo email
+    static async findByEmail(email) {
+        try {
+            const res = await query("SELECT * FROM users WHERE email = $1", [
+                email,
+            ]);
+            return res.rows[0] ? new User(res.rows[0]) : null;
+        } catch (error) {
+            console.error("Lỗi khi tìm user theo email:", error);
             return null;
         }
     }

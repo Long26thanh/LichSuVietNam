@@ -39,12 +39,19 @@ function Button({
         return sizeMap[size] || styles.btnMedium;
     };
 
-    // Function to render icon based on type
     const renderIcon = (icon) => {
         if (typeof icon === "string") {
-            return <img src={icon} alt="icon" />;
+            if (icon.startsWith("<svg")) {
+                return (
+                    <span
+                        className={styles.btnIconSvg}
+                        dangerouslySetInnerHTML={{ __html: icon }}
+                    />
+                );
+            }
+            return <img className={styles.btnIconImg} src={icon} alt="icon" />;
         }
-        return icon;
+        return <span className={styles.btnIconComponent}>{icon}</span>;
     };
 
     const buttonClasses = [
@@ -97,7 +104,9 @@ function Button({
 
             {!loading && icon && iconPosition === "left" && (
                 <span className={`${styles.btnIcon} ${styles.btnIconLeft}`}>
-                    {icon && renderIcon(icon)}
+                    <span className={styles.btnIconWrapper}>
+                        {icon && renderIcon(icon)}
+                    </span>
                 </span>
             )}
 
@@ -105,7 +114,9 @@ function Button({
 
             {!loading && icon && iconPosition === "right" && (
                 <span className={`${styles.btnIcon} ${styles.btnIconRight}`}>
-                    {icon && renderIcon(icon)}
+                    <span className={styles.btnIconWrapper}>
+                        {icon && renderIcon(icon)}
+                    </span>
                 </span>
             )}
         </button>

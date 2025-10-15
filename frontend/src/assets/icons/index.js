@@ -8,3 +8,4 @@ export { default as search } from "./search.svg";
 export { default as dropdownArrow } from "./dropdown-arrow.svg";
 export { default as settings } from "./settings.svg";
 export { default as logout } from "./logout.svg";
+export { default as addUser } from "./add-user.svg";

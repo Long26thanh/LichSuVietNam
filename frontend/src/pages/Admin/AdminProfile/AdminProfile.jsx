@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import userService from '@/services/userService';
-import './AdminProfile.css';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import userService from "@/services/userService";
+import "./AdminProfile.css";
 
 const AdminProfile = () => {
     const { user: authUser, updateUser } = useAuth();
     const [user, setUser] = useState(authUser);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState("");
     const [formData, setFormData] = useState({
-        full_name: '',
-        email: '',
-        phone: '',
-        bio: ''
+        full_name: "",
+        email: "",
+        phone: "",
+        bio: "",
     });
 
     useEffect(() => {
@@ -24,10 +24,10 @@ const AdminProfile = () => {
                 if (res?.success) {
                     setUser(res.user);
                     setFormData({
-                        full_name: res.user.full_name || '',
-                        email: res.user.email || '',
-                        phone: res.user.phone || '',
-                        bio: res.user.bio || ''
+                        full_name: res.user.full_name || "",
+                        email: res.user.email || "",
+                        phone: res.user.phone || "",
+                        bio: res.user.bio || "",
                     });
                 }
             } finally {
@@ -45,18 +45,18 @@ const AdminProfile = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
-        setMessage('');
+        setMessage("");
         try {
             const res = await userService.updateCurrentUser(formData);
             if (res?.success) {
                 setUser(res.user);
                 if (updateUser) updateUser(res.user);
-                setMessage('Cập nhật thành công');
+                setMessage("Cập nhật thành công");
             } else {
-                setMessage(res?.message || 'Cập nhật thất bại');
+                setMessage(res?.message || "Cập nhật thất bại");
             }
         } catch (err) {
-            setMessage('Có lỗi xảy ra');
+            setMessage("Có lỗi xảy ra");
         } finally {
             setSaving(false);
         }
@@ -124,7 +124,7 @@ const AdminProfile = () => {
 
                     <div className="actions">
                         <button type="submit" disabled={saving}>
-                            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                            {saving ? "Đang lưu..." : "Lưu thay đổi"}
                         </button>
                     </div>
                 </form>
@@ -134,5 +134,3 @@ const AdminProfile = () => {
 };
 
 export default AdminProfile;
-
-

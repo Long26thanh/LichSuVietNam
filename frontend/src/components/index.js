@@ -7,9 +7,11 @@ export { default as LocationCard } from "./Card/LocationCard/LocationCard";
 export { default as FigureCard } from "./Card/FigureCard/FigureCard";
 export { default as UserDropdown } from "./UserDropdown/UserDropdown";
 export { default as ProtectedRoute } from "./ProtectedRoute/ProtectedRoute";
+export { default as UserForm } from "./UserForm/UserForm";
 // Admin components
 export { default as AdminSidebar } from "./Admin/AdminSidebar/AdminSidebar";
 export { default as AdminHeader } from "./Admin/AdminHeader/AdminHeader";
 export { default as StatsCard } from "./Admin/StatsCard/StatsCard";
 export { default as RecentActivity } from "./Admin/RecentActivity/RecentActivity";
 export { default as QuickActions } from "./Admin/QuickActions/QuickActions";
+export { default as ConfirmDialog } from "./ConfirmDialog/ConfirmDialog";

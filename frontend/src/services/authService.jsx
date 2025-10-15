@@ -45,9 +45,10 @@ const testApiConnectivity = async () => {
 class AuthService {
     constructor() {
         // Session cho user thường (đọc cả key mới và cũ để backward compatible)
-        this.usertoken = localStorage.getItem("auth_token") || null;
+        this.userToken = localStorage.getItem("auth_token") || null;
         this.userRefreshToken = localStorage.getItem("refresh_token") || null;
-        this.userUser = JSON.parse(localStorage.getItem("user") || "null") || null;
+        this.userUser =
+            JSON.parse(localStorage.getItem("user") || "null") || null;
 
         // Session cho admin
         this.adminToken = localStorage.getItem("admin_auth_token") || null;
@@ -68,8 +69,11 @@ class AuthService {
         this.validationInProgress = false;
         this.lastValidationTime = null;
         this.validationCacheDuration = 30000;
+        this.tokenExpiresAt = null;
+        this.lastActivityRefreshTime = 0;
 
         this.setupInterceptors();
+        this.initializeActivityRefresh();
     }
 
     // Lưu thông tin đăng nhập
@@ -226,7 +230,6 @@ class AuthService {
     autoSwitchSessionType(currentPath) {
         const isAdminRoute = currentPath.startsWith("/admin");
 
-        console.log(isAdminRoute);
         if (isAdminRoute && this.currentSessionType !== "admin") {
             // Đang ở trang admin nhưng session type là user
             console.log("Auto switching to admin session for admin route");
@@ -339,7 +342,7 @@ class AuthService {
                         } else {
                             this.userUser = data.data;
                             localStorage.setItem(
-                                "user_user",
+                                "user",
                                 JSON.stringify(this.userUser)
                             );
                         }
@@ -394,48 +397,6 @@ class AuthService {
         return this.token;
     }
 
-    // Đăng nhập
-    async login(username, password) {
-        try {
-            const response = await apiClient.post("/login", {
-                username,
-                password,
-            });
-
-            if (response.data.success) {
-                const { token, user } = response.data.data;
-                this.saveAuthInfo(token, user);
-
-                // Cập nhật header cho các API requests
-                apiClient.defaults.headers.common[
-                    "Authorization"
-                ] = `Bearer ${token}`;
-                userApiClient.defaults.headers.common[
-                    "Authorization"
-                ] = `Bearer ${token}`;
-
-                return response.data;
-            }
-            throw new Error(response.data.message || "Login failed");
-        } catch (error) {
-            console.error("Login error:", error);
-            throw error;
-        }
-    }
-
-    // Đăng xuất
-    async logout() {
-        try {
-            await apiClient.post("/logout");
-        } catch (error) {
-            console.error("Logout error:", error);
-        } finally {
-            this.clearAuthInfo();
-            delete apiClient.defaults.headers.common["Authorization"];
-            delete userApiClient.defaults.headers.common["Authorization"];
-        }
-    }
-
     // Hàm refresh token
     async refreshToken() {
         // Nếu đã có một lần refresh đang diễn ra, chờ nó hoàn thành
@@ -474,8 +435,21 @@ class AuthService {
             this.token = data.tokens.accessToken;
             this.refreshToken = data.tokens.refreshToken;
 
-            localStorage.setItem("auth_token", this.token);
-            localStorage.setItem("refresh_token", this.refreshToken);
+            // Ghi theo session hiện tại (admin/user) để các service khác đọc đúng
+            if (this.currentSessionType === "admin") {
+                this.adminToken = this.token;
+                this.adminRefreshToken = this.refreshToken;
+                localStorage.setItem("admin_auth_token", this.token);
+                localStorage.setItem("admin_refresh_token", this.refreshToken);
+            } else {
+                this.userToken = this.token;
+                this.userRefreshToken = this.refreshToken;
+                localStorage.setItem("auth_token", this.token);
+                localStorage.setItem("refresh_token", this.refreshToken);
+            }
+
+            // Đồng bộ interceptor với token mới
+            this.updateInterceptors(this.token);
 
             // Lên lịch refresh token tiếp theo
             this.scheduleTokenRefresh(data.expiresIn);
@@ -502,6 +476,9 @@ class AuthService {
             `Scheduling token refresh in ${refreshTime / 1000} seconds`
         );
 
+        // Lưu thời điểm hết hạn để dùng khi có tương tác
+        this.tokenExpiresAt = Date.now() + (typeof expiresIn === "number" ? expiresIn : 0);
+
         this.refreshTimer = setTimeout(async () => {
             try {
                 console.log("Attempting automatic token refresh...");
@@ -511,6 +488,37 @@ class AuthService {
             }
         }, refreshTime);
     };
+
+    // Tự động refresh khi có tương tác nếu sắp hết hạn
+    initializeActivityRefresh() {
+        const activityHandler = () => this.maybeRefreshOnActivity();
+        [
+            "click",
+            "keydown",
+            "mousemove",
+            "scroll",
+            "touchstart",
+            "visibilitychange",
+        ].forEach((evt) => window.addEventListener(evt, activityHandler));
+    }
+
+    maybeRefreshOnActivity() {
+        // Debounce để tránh gọi liên tục: tối đa 1 lần mỗi 60s
+        const now = Date.now();
+        if (now - this.lastActivityRefreshTime < 60000) return;
+        this.lastActivityRefreshTime = now;
+
+        // Chỉ xử lý nếu có token và có thời điểm hết hạn
+        if (!this.token || !this.tokenExpiresAt) return;
+
+        // Nếu token còn < 6 phút sẽ hết hạn, refresh ngay
+        const timeLeft = this.tokenExpiresAt - now;
+        if (timeLeft <= 360000) {
+            this.refreshToken().catch((e) =>
+                console.error("Activity-triggered refresh failed:", e)
+            );
+        }
+    }
 
     // ===========================
     // Các hàm liên quan đến authentication
@@ -533,8 +541,23 @@ class AuthService {
         return result;
     };
 
+    // Hàm Đăng ký
+    async register(userData) {
+        try {
+            const response = await apiClient.post("/register", userData);
+            return response.data;
+        } catch (error) {
+            console.error("Registration error:", error);
+            const errorMessage =
+                error.response?.data?.error ||
+                error.response?.data?.message ||
+                "Đăng ký thất bại";
+            throw new Error(errorMessage);
+        }
+    }
+
     // Hàm đăng nhập với phân biệt admin/user
-    login = async (credentials, sessionType = "user") => {
+    async login(credentials, sessionType = "user") {
         try {
             const response = await apiClient.post("/login", credentials);
             const data = response.data;
@@ -578,20 +601,20 @@ class AuthService {
                 "Đăng nhập thất bại";
             throw new Error(errorMessage);
         }
-    };
+    }
 
     // Hàm đăng nhập admin (wrapper cho login với sessionType admin)
-    adminLogin = async (credentials) => {
+    async adminLogin(credentials) {
         return this.login(credentials, "admin");
-    };
+    }
 
     // Hàm đăng nhập user (wrapper cho login với sessionType user)
-    userLogin = async (credentials) => {
+    async userLogin(credentials) {
         return this.login(credentials, "user");
-    };
+    }
 
     // Hàm đăng xuất session hiện tại
-    logout = async () => {
+    async logout() {
         try {
             const currentSession = this.getCurrentSession();
             if (currentSession.token) {
@@ -625,7 +648,7 @@ class AuthService {
             this.switchToSession("admin");
         } else {
             this.currentSessionType = "user";
-            localStorage.setItem("current_session_type", "user");
+            localStorage.setItem("session_type", "user");
             this.updateInterceptors(null);
         }
 
@@ -633,7 +656,7 @@ class AuthService {
             clearTimeout(this.refreshTimer);
         }
         this.lastValidationTime = null;
-    };
+    }
 
     // ===========================
     // Các hàm liên quan đến user
