@@ -7,7 +7,8 @@ import {
     validateFullName,
     validatePhoneNumber,
 } from "@/utils";
-import "./UserForm.css";
+import { useAuth } from "@/contexts/AuthContext";
+import styles from "./UserForm.module.css";
 
 const defaultValues = {
     full_name: "",
@@ -31,6 +32,7 @@ const UserForm = ({
     loading = false,
     title,
 }) => {
+    const { user } = useAuth();
     const [values, setValues] = useState(defaultValues);
     const [errors, setErrors] = useState({});
 
@@ -38,7 +40,38 @@ const UserForm = ({
 
     useEffect(() => {
         if (initialValues) {
-            setValues((prev) => ({ ...prev, ...initialValues }));
+            const {
+                full_name,
+                username,
+                email,
+                role,
+                is_active,
+                phone,
+                birthday,
+                address,
+                bio,
+                avatar_url,
+            } = initialValues;
+
+            // Xác định trạng thái hoạt động của tài khoản
+            const activeStatus =
+                is_active === undefined || is_active === null
+                    ? true
+                    : !!is_active;
+
+            setValues((prev) => ({
+                ...prev,
+                full_name: full_name || "",
+                username: username || "",
+                email: email || "",
+                role: role || "user",
+                status: activeStatus ? "active" : "blocked",
+                phone: phone || "",
+                birthday: birthday || "",
+                address: address || "",
+                bio: bio || "",
+                avatar_url: avatar_url || "",
+            }));
         }
     }, [initialValues]);
 
@@ -79,26 +112,40 @@ const UserForm = ({
             setErrors(v);
             return;
         }
-        const payload = { ...values, updated_at: new Date().toISOString() };
+        // Tạo payload chỉ với các trường cần thiết
+        const payload = {
+            full_name: values.full_name,
+            username: values.username,
+            email: values.email,
+            role: values.role,
+            status: values.status,
+            phone: values.phone || null,
+            birthday: values.birthday === "" ? null : values.birthday,
+            address: values.address || null,
+            bio: values.bio || null,
+            avatar_url: values.avatar_url || null,
+            updated_at: new Date().toISOString(),
+        };
 
-        // Convert empty birthday string to null
-        if (payload.birthday === "") {
-            payload.birthday = null;
+        // Thêm mật khẩu chỉ khi tạo mới user
+        if (!isEdit) {
+            if (!values.password) {
+                setErrors((p) => ({
+                    ...p,
+                    password: "Vui lòng nhập mật khẩu",
+                }));
+                return;
+            }
+            payload.password = values.password;
         }
 
-        if (isEdit) {
-            delete payload.password;
-        } else if (!payload.password) {
-            setErrors((p) => ({ ...p, password: "Vui lòng nhập mật khẩu" }));
-            return;
-        }
         onSubmit && onSubmit(payload);
     };
 
     return (
-        <div className="user-form-modal">
-            <div className="user-form-dialog">
-                <div className="user-form-header">
+        <div className={styles["user-form-modal"]}>
+            <div className={styles["user-form-dialog"]}>
+                <div className={styles["user-form-header"]}>
                     <h3>
                         {title ||
                             (isEdit
@@ -106,9 +153,9 @@ const UserForm = ({
                                 : "Thêm người dùng")}
                     </h3>
                 </div>
-                <form className="user-form" onSubmit={handleSubmit}>
-                    <div className="grid">
-                        <div className="form-group">
+                <form className={styles["user-form"]} onSubmit={handleSubmit}>
+                    <div className={styles.grid}>
+                        <div className={styles["form-group"]}>
                             <label>Họ tên *</label>
                             <input
                                 name="full_name"
@@ -117,13 +164,13 @@ const UserForm = ({
                                 placeholder="Nhập họ tên"
                             />
                             {errors.full_name && (
-                                <span className="error-text">
+                                <span className={styles["error-text"]}>
                                     {errors.full_name}
                                 </span>
                             )}
                         </div>
 
-                        <div className="form-group">
+                        <div className={styles["form-group"]}>
                             <label>Tên người dùng *</label>
                             <input
                                 name="username"
@@ -133,13 +180,13 @@ const UserForm = ({
                                 disabled={isEdit}
                             />
                             {errors.username && (
-                                <span className="error-text">
+                                <span className={styles["error-text"]}>
                                     {errors.username}
                                 </span>
                             )}
                         </div>
 
-                        <div className="form-group">
+                        <div className={styles["form-group"]}>
                             <label>Email *</label>
                             <input
                                 name="email"
@@ -148,7 +195,7 @@ const UserForm = ({
                                 placeholder="name@example.com"
                             />
                             {errors.email && (
-                                <span className="error-text">
+                                <span className={styles["error-text"]}>
                                     {errors.email}
                                 </span>
                             )}
@@ -193,14 +240,19 @@ const UserForm = ({
                                 name="role"
                                 value={values.role}
                                 onChange={handleChange}
+                                disabled={
+                                    values.role === "sa" || user?.role !== "sa"
+                                }
                             >
                                 <option value="user">User</option>
                                 <option value="admin">Admin</option>
-                                <option value="sa">Super Admin</option>
+                                {values.role === "sa" &&
+                                    (<option value="sa">Super Admin</option> ||
+                                        currentUser?.role === "sa")}
                             </select>
                         </div>
 
-                        <div className="form-group">
+                        <div className={styles["form-group"]}>
                             <label>Trạng thái</label>
                             <select
                                 name="status"
@@ -208,11 +260,11 @@ const UserForm = ({
                                 onChange={handleChange}
                             >
                                 <option value="active">Hoạt động</option>
-                                <option value="blocked">Không hoạt động</option>
+                                <option value="blocked">Đã khóa</option>
                             </select>
                         </div>
 
-                        <div className="form-group">
+                        <div className={styles["form-group"]}>
                             <label>Ngày sinh</label>
                             <input
                                 type="date"
@@ -222,7 +274,7 @@ const UserForm = ({
                             />
                         </div>
 
-                        <div className="form-group">
+                        <div className={styles["form-group"]}>
                             <label>Ảnh đại diện (URL)</label>
                             <input
                                 name="avatar_url"
@@ -232,7 +284,9 @@ const UserForm = ({
                             />
                         </div>
 
-                        <div className="form-group form-group--full">
+                        <div
+                            className={`${styles["form-group"]} ${styles["form-group--full"]}`}
+                        >
                             <label>Địa chỉ</label>
                             <textarea
                                 name="address"
@@ -243,7 +297,9 @@ const UserForm = ({
                             />
                         </div>
 
-                        <div className="form-group form-group--full">
+                        <div
+                            className={`${styles["form-group"]} ${styles["form-group--full"]}`}
+                        >
                             <label>Giới thiệu</label>
                             <textarea
                                 name="bio"
@@ -255,7 +311,7 @@ const UserForm = ({
                         </div>
                     </div>
 
-                    <div className="form-actions">
+                    <div className={styles["form-actions"]}>
                         <Button
                             type="button"
                             variant="secondary"

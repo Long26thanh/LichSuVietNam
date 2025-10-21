@@ -3,12 +3,14 @@ import userService from "@/services/userService";
 import { Button, UserForm, ConfirmDialog } from "@/components";
 import ResetPasswordModal from "@/components/ResetPasswordModal/ResetPasswordModal";
 import { addUser } from "@/assets/icons";
+import { useAuth } from "../../../contexts/AuthContext";
 import { validatePassword } from "@/utils";
 import "./AdminUsers.css";
 
 const defaultFilters = { q: "", role: "", status: "" };
 
 const AdminUsers = () => {
+    const { user: currentUser } = useAuth();
     const [users, setUsers] = useState([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
@@ -16,6 +18,7 @@ const AdminUsers = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [filters, setFilters] = useState(defaultFilters);
+    const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
     const [refreshKey, setRefreshKey] = useState(0);
     const [showForm, setShowForm] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
@@ -37,7 +40,7 @@ const AdminUsers = () => {
                 const res = await userService.getAllUsers({
                     page,
                     limit,
-                    ...filters,
+                    ...appliedFilters,
                 });
                 if (res?.success) {
                     setUsers(res.data?.data || []);
@@ -54,15 +57,31 @@ const AdminUsers = () => {
             }
         };
         load();
-    }, [page, limit, filters, refreshKey]);
+    }, [page, limit, appliedFilters, refreshKey]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters((prev) => ({ ...prev, [name]: value }));
         setPage(1);
+
+        // Tự động lọc khi thay đổi role hoặc status
+        if (name === "role" || name === "status") {
+            const newFilters = { ...filters, [name]: value };
+            setAppliedFilters(newFilters);
+            setRefreshKey((k) => k + 1);
+        }
     };
 
-    const handleRefresh = () => setRefreshKey((k) => k + 1);
+    const handleSearch = () => {
+        // Chỉ cập nhật tìm kiếm text (q), giữ nguyên role và status hiện tại
+        setAppliedFilters((prev) => ({ ...prev, q: filters.q }));
+        setPage(1);
+        setRefreshKey((k) => k + 1);
+    };
+
+    const handleRefresh = () => {
+        setRefreshKey((k) => k + 1);
+    };
 
     const openCreate = () => {
         setEditingUser(null);
@@ -70,6 +89,7 @@ const AdminUsers = () => {
     };
 
     const openEdit = (user) => {
+        console.log("Editing user:", user);
         setEditingUser(user);
         setShowForm(true);
     };
@@ -148,6 +168,27 @@ const AdminUsers = () => {
         setTargetUser(null);
     };
 
+    const handleConfirmDelete = async () => {
+        if (!targetUser) return;
+        setSubmitting(true);
+        try {
+            const id = targetUser.id || targetUser._id;
+            const res = await userService.deleteUser(id);
+
+            if (res?.success) {
+                closeDeleteUser();
+                handleRefresh();
+            } else {
+                throw new Error(res?.message || "Không thể xóa người dùng");
+            }
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            alert(error.message || "Có lỗi xảy ra khi xóa người dùng");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const submitResetPassword = async ({ password }) => {
         if (!targetUser) return;
         setSubmitting(true);
@@ -176,7 +217,12 @@ const AdminUsers = () => {
                         name="q"
                         value={filters.q}
                         onChange={handleFilterChange}
-                        placeholder="Tìm theo tên, email..."
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                handleSearch();
+                            }
+                        }}
+                        placeholder="Tìm theo tên, email... (nhấn Enter hoặc nút Tìm kiếm)"
                     />
                     <select
                         name="role"
@@ -197,7 +243,7 @@ const AdminUsers = () => {
                         <option value="active">Hoạt động</option>
                         <option value="blocked">Không hoạt động</option>
                     </select>
-                    <Button onClick={handleRefresh}>Làm mới</Button>
+                    <Button onClick={handleSearch}>Tìm kiếm</Button>
                 </div>
                 <div className="actions">
                     <Button icon={addUser} onClick={openCreate}>
@@ -305,18 +351,35 @@ const AdminUsers = () => {
                                             </td>
                                             <td className="row-actions">
                                                 <Button
+                                                    variant="edit"
+                                                    size="small"
                                                     onClick={() => openEdit(u)}
                                                 >
                                                     Sửa
                                                 </Button>
                                                 <Button
+                                                    variant="reset"
+                                                    size="small"
                                                     onClick={() =>
                                                         openResetPassword(u)
                                                     }
                                                 >
                                                     Đặt lại mật khẩu
                                                 </Button>
-                                                <Button onClick={() => openDeleteUser(u)}>Xóa</Button>
+                                                <Button
+                                                    variant="delete"
+                                                    size="small"
+                                                    onClick={() =>
+                                                        openDeleteUser(u)
+                                                    }
+                                                    disabled={
+                                                        u.role === "sa" ||
+                                                        u.role ===
+                                                            currentUser.role
+                                                    }
+                                                >
+                                                    Xóa
+                                                </Button>
                                             </td>
                                         </tr>
                                     );
@@ -391,25 +454,17 @@ const AdminUsers = () => {
             <ConfirmDialog
                 open={showDelete}
                 title="Xác nhận xóa người dùng"
-                message={`Bạn có chắc muốn xóa tài khoản "${targetUser?.full_name || targetUser?.username || "người dùng"}"? Hành động này không thể hoàn tác.`}
+                message={`Bạn có chắc muốn xóa tài khoản "${
+                    targetUser?.full_name ||
+                    targetUser?.username ||
+                    "người dùng"
+                }"? Hành động này không thể hoàn tác.`}
                 confirmText="Xóa"
                 cancelText="Hủy"
                 danger
                 loading={submitting}
                 onCancel={closeDeleteUser}
-                onConfirm={async () => {
-                    if (!targetUser) return;
-                    setSubmitting(true);
-                    const id = targetUser.id || targetUser._id;
-                    const res = await userService.deleteUser(id);
-                    setSubmitting(false);
-                    if (res?.success) {
-                        closeDeleteUser();
-                        handleRefresh();
-                    } else {
-                        alert(res?.message || "Không thể xóa người dùng");
-                    }
-                }}
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

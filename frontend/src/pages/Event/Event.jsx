@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import Search from "@/components/Search/Search";
 import EventCard from "@/components/Card/EventCard/EventCard";
-import eventService from "@/services/eventService";
+import { eventService } from "@/services";
 import "./Event.css";
+import { TextEditor } from "../../components";
 
 function Event() {
     const [events, setEvents] = useState([]);
@@ -37,10 +38,7 @@ function Event() {
                 }
                 setEvents(response.data || []);
             } catch (err) {
-                if (
-                    err.name !== "CanceledError" &&
-                    err.name !== "AbortError"
-                ) {
+                if (err.name !== "CanceledError" && err.name !== "AbortError") {
                     setError(err.message);
                 }
             } finally {
@@ -103,13 +101,26 @@ function Event() {
             </div>
 
             <div className="search-section">
-                <Search onSearch={handleSearch} placeholder="Tìm kiếm sự kiện..." />
+                <Search
+                    onSearch={handleSearch}
+                    placeholder="Tìm kiếm sự kiện..."
+                />
                 {showResultsInfo && (
-                    <div className={`search-results-info ${showResultsInfo ? "show" : ""}`}>
+                    <div
+                        className={`search-results-info ${
+                            showResultsInfo ? "show" : ""
+                        }`}
+                    >
                         <span>Tìm thấy</span>
                         <span className="count">{filteredEvents.length}</span>
                         <span>sự kiện</span>
-                        <button className="clear-btn" onClick={handleClearSearch} title="Xóa tìm kiếm">✕</button>
+                        <button
+                            className="clear-btn"
+                            onClick={handleClearSearch}
+                            title="Xóa tìm kiếm"
+                        >
+                            ✕
+                        </button>
                     </div>
                 )}
             </div>

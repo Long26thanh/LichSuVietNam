@@ -26,6 +26,11 @@ function Button({
             dark: styles.btnDark,
             ghost: styles.btnGhost,
             iconOnly: styles.btnIconOnly,
+            // Admin specific variants
+            edit: styles.btnEdit,
+            reset: styles.btnReset,
+            delete: styles.btnDelete,
+            view: styles.btnView,
         };
         return variantMap[variant] || styles.btnPrimary;
     };

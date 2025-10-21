@@ -1,15 +1,18 @@
 .admin-header {
     background: white;
     border-bottom: 1px solid #e9ecef;
-    padding: 0 20px;
-    height: 70px;
+    padding: 0 24px;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    position: sticky;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
     top: 0;
-    z-index: 100;
+    right: 0;
+    left: 260px;
+    z-index: 990;
+    transition: left 0.3s ease;
 }
 
 .header-left {
@@ -68,20 +71,20 @@
     .sidebar-toggle {
         display: block;
     }
-    
+
     .welcome-text {
         display: none;
     }
-    
+
     .admin-header {
         padding: 0 15px;
         height: 60px;
     }
-    
+
     .notification-dropdown {
         width: 300px;
     }
-    
+
     .user-dropdown {
         min-width: 250px;
     }
@@ -91,18 +94,18 @@
     .header-left h1 {
         font-size: 1.3rem;
     }
-    
+
     .user-avatar {
         width: 40px;
         height: 40px;
         font-size: 1rem;
     }
-    
+
     .notification-dropdown {
         width: 280px;
         right: -50px;
     }
-    
+
     .user-dropdown {
         min-width: 220px;
         right: -20px;

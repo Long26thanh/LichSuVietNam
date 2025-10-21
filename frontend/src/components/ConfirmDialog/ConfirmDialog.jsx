@@ -1,5 +1,5 @@
 import React from "react";
-import "./ConfirmDialog.css";
+import styles from "./ConfirmDialog.module.css";
 
 const ConfirmDialog = ({
     open,
@@ -14,24 +14,34 @@ const ConfirmDialog = ({
 }) => {
     if (!open) return null;
     return (
-        <div className="confirm-backdrop" onClick={loading ? undefined : onCancel}>
-            <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
-                <div className="confirm-header">
+        <div
+            className={styles["confirm-backdrop"]}
+            onClick={loading ? undefined : onCancel}
+        >
+            <div
+                className={styles["confirm-dialog"]}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className={styles["confirm-header"]}>
                     <h3>{title}</h3>
                 </div>
-                <div className="confirm-body">
+                <div className={styles["confirm-body"]}>
                     <p>{message}</p>
                 </div>
-                <div className="confirm-actions">
+                <div className={styles["confirm-actions"]}>
                     <button
-                        className="btn btn-secondary"
+                        className={`${styles.btn} ${styles["btn-secondary"]}`}
                         onClick={onCancel}
                         disabled={loading}
                     >
                         {cancelText}
                     </button>
                     <button
-                        className={`btn ${danger ? "btn-danger" : "btn-primary"}`}
+                        className={`${styles.btn} ${
+                            danger
+                                ? styles["btn-danger"]
+                                : styles["btn-primary"]
+                        }`}
                         onClick={onConfirm}
                         disabled={loading}
                     >
@@ -44,5 +54,3 @@ const ConfirmDialog = ({
 };
 
 export default ConfirmDialog;
-
-

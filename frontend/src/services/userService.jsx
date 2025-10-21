@@ -245,7 +245,6 @@ class UserService {
 
     async updateUser(userId, data) {
         try {
-            console.log("Updating user:", userId, data);
             const response = await apiClient.put(`/${userId}`, data);
             return response.data;
         } catch (error) {

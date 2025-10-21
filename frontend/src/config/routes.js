@@ -22,6 +22,7 @@ const routes = {
     adminLocations: "/admin/locations",
     adminPeriods: "/admin/periods",
     adminProfile: "/admin/profile",
+    periodPreview: "/admin/preview/periods/:id",
 };
 
 export default routes;

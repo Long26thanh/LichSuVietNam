@@ -67,7 +67,7 @@ class UserController {
                           )
                         ? false
                         : undefined,
-                requesterRole: req.user.role, // Thêm role của người gửi request
+                currentUserRole: req.user.role, // Truyền role của người dùng hiện tại
             };
             const result = await User.getAllUsers(options);
             return res.json({

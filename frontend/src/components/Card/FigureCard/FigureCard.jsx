@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import routes from "@/config/routes";
-import "./FigureCard.css";
+import styles from "./FigureCard.module.css";
 
 const FigureCard = ({ figure }) => {
     const navigate = useNavigate();
@@ -30,37 +30,45 @@ const FigureCard = ({ figure }) => {
     };
 
     return (
-        <div className="figure-card" onClick={handleCardClick}>
-            <div className="figure-card-header">
-                <h3 className="figure-name">{figure.name}</h3>
+        <div className={styles["figure-card"]} onClick={handleCardClick}>
+            <div className={styles["figure-card-header"]}>
+                <h3 className={styles["figure-name"]}>{figure.name}</h3>
                 {figure.title && (
-                    <span className="figure-title">{figure.title}</span>
+                    <span className={styles["figure-title"]}>
+                        {figure.title}
+                    </span>
                 )}
             </div>
 
-            <div className="figure-card-content">
-                <div className="figure-info">
-                    <span className="info-label">Thời gian:</span>
-                    <span className="info-value">{formatLifespan()}</span>
+            <div className={styles["figure-card-content"]}>
+                <div className={styles["figure-info"]}>
+                    <span className={styles["info-label"]}>Thời gian:</span>
+                    <span className={styles["info-value"]}>
+                        {formatLifespan()}
+                    </span>
                 </div>
 
                 {figure.birth_place && (
-                    <div className="figure-info">
-                        <span className="info-label">Nơi sinh:</span>
-                        <span className="info-value">{figure.birth_place}</span>
+                    <div className={styles["figure-info"]}>
+                        <span className={styles["info-label"]}>Nơi sinh:</span>
+                        <span className={styles["info-value"]}>
+                            {figure.birth_place}
+                        </span>
                     </div>
                 )}
 
                 {figure.death_place && (
-                    <div className="figure-info">
-                        <span className="info-label">Nơi mất:</span>
-                        <span className="info-value">{figure.death_place}</span>
+                    <div className={styles["figure-info"]}>
+                        <span className={styles["info-label"]}>Nơi mất:</span>
+                        <span className={styles["info-value"]}>
+                            {figure.death_place}
+                        </span>
                     </div>
                 )}
 
                 {figure.achievements && (
-                    <div className="figure-achievements">
-                        <span className="info-label">Thành tựu:</span>
+                    <div className={styles["figure-achievements"]}>
+                        <span className={styles["info-label"]}>Thành tựu:</span>
                         <ul>
                             {figure.achievements
                                 .split(/[.\n]+/)
@@ -73,8 +81,10 @@ const FigureCard = ({ figure }) => {
                 )}
             </div>
 
-            <div className="figure-card-footer">
-                <button className="view-details-btn">Xem chi tiết</button>
+            <div className={styles["figure-card-footer"]}>
+                <button className={styles["view-details-btn"]}>
+                    Xem chi tiết
+                </button>
             </div>
         </div>
     );

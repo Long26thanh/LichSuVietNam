@@ -54,6 +54,11 @@ const routes = [
         page: Pages.AdminProfile,
         layout: AdminLayout,
     },
+    {
+        path: config.routes.periodPreview,
+        page: Pages.PeriodDetail,
+        layout: AdminLayout,
+    },
 ];
 
 export default routes;

@@ -40,7 +40,7 @@ const FigureDetail = () => {
         const { birth_place_id, death_place_id } = item || {};
         const loadNames = async () => {
             try {
-                const [birthName, deathName] = await Promise.all([
+                const [birthNameRes, deathNameRes] = await Promise.all([
                     birth_place_id
                         ? locationService.getLocationNameById(birth_place_id)
                         : Promise.resolve(null),
@@ -48,9 +48,15 @@ const FigureDetail = () => {
                         ? locationService.getLocationNameById(death_place_id)
                         : Promise.resolve(null),
                 ]);
-                setBirthPlaceName(birthName);
-                setDeathPlaceName(deathName);
-            } catch (_) {}
+                setBirthPlaceName(
+                    birthNameRes?.success ? birthNameRes.data.name : null
+                );
+                setDeathPlaceName(
+                    deathNameRes?.success ? deathNameRes.data.name : null
+                );
+            } catch (_) {
+                console.error("Error loading place names:", _);
+            }
         };
         loadNames();
     }, [item]);
@@ -116,14 +122,12 @@ const FigureDetail = () => {
                         )}
                     </ul>
                 </section>
-
                 {item.biography && (
                     <section className="fig-section">
                         <h2 className="section-title">Tiểu sử</h2>
                         <div className="section-content">{item.biography}</div>
                     </section>
                 )}
-
                 {item.achievements && (
                     <section className="fig-section">
                         <h2 className="section-title">Thành tựu</h2>

@@ -100,12 +100,12 @@
     .quick-actions {
         padding: 20px;
     }
-    
+
     .action-card {
         padding: 14px;
         gap: 12px;
     }
-    
+
     .action-icon {
         width: 35px;
         height: 35px;
@@ -119,11 +119,11 @@
         text-align: center;
         gap: 10px;
     }
-    
+
     .action-content {
         order: 2;
     }
-    
+
     .action-arrow {
         order: 3;
     }

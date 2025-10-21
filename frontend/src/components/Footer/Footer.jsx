@@ -1,33 +1,39 @@
-import "./Footer.css";
+import styles from "./Footer.module.css";
 import config from "../../config";
 
 function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="footer">
-            <div className="footer-container">
-                <div className="footer-content">
+        <footer className={styles.footer}>
+            <div className={styles["footer-container"]}>
+                <div className={styles["footer-content"]}>
                     {/* Logo và mô tả */}
-                    <div className="footer-section footer-brand">
-                        <div className="footer-logo">
+                    <div
+                        className={`${styles["footer-section"]} ${styles["footer-brand"]}`}
+                    >
+                        <div className={styles["footer-logo"]}>
                             <img
-                                className="footer-logo-image"
+                                className={styles["footer-logo-image"]}
                                 src="/logo.svg"
                                 alt="Lịch sử Việt Nam"
                             />
-                            <h3 className="footer-title">Lịch sử Việt Nam</h3>
+                            <h3 className={styles["footer-title"]}>
+                                Lịch sử Việt Nam
+                            </h3>
                         </div>
-                        <p className="footer-description">
+                        <p className={styles["footer-description"]}>
                             Khám phá và tìm hiểu lịch sử văn hóa của dân tộc
                             Việt Nam từ quá khứ đến hiện tại.
                         </p>
                     </div>
 
                     {/* Navigation Links */}
-                    <div className="footer-section">
-                        <h4 className="footer-section-title">Khám phá</h4>
-                        <ul className="footer-links">
+                    <div className={styles["footer-section"]}>
+                        <h4 className={styles["footer-section-title"]}>
+                            Khám phá
+                        </h4>
+                        <ul className={styles["footer-links"]}>
                             <li>
                                 <a href={config.routes.home}>Trang chủ</a>
                             </li>
@@ -68,12 +74,14 @@ function Footer() {
                     </div>
 
                     {/* Social Media */}
-                    <div className="footer-section">
-                        <h4 className="footer-section-title">Kết nối</h4>
-                        <div className="footer-social">
+                    <div className={styles["footer-section"]}>
+                        <h4 className={styles["footer-section-title"]}>
+                            Kết nối
+                        </h4>
+                        <div className={styles["footer-social"]}>
                             <a
                                 href="#"
-                                className="social-link"
+                                className={styles["social-link"]}
                                 aria-label="Facebook"
                             >
                                 <svg viewBox="0 0 24 24" fill="currentColor">

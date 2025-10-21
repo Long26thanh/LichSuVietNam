@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import './RecentActivity.css';
+import React, { useState, useEffect } from "react";
+import styles from "./RecentActivity.module.css";
 
 const RecentActivity = () => {
     const [activities, setActivities] = useState([]);
@@ -10,47 +10,48 @@ const RecentActivity = () => {
         const loadActivities = async () => {
             setLoading(true);
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+
                 setActivities([
                     {
                         id: 1,
-                        type: 'user',
-                        message: 'Người dùng mới đăng ký: Nguyễn Văn A',
-                        time: '2 phút trước',
-                        icon: '👤'
+                        type: "user",
+                        message: "Người dùng mới đăng ký: Nguyễn Văn A",
+                        time: "2 phút trước",
+                        icon: "👤",
                     },
                     {
                         id: 2,
-                        type: 'event',
-                        message: 'Sự kiện mới được thêm: Chiến thắng Điện Biên Phủ',
-                        time: '15 phút trước',
-                        icon: '📅'
+                        type: "event",
+                        message:
+                            "Sự kiện mới được thêm: Chiến thắng Điện Biên Phủ",
+                        time: "15 phút trước",
+                        icon: "📅",
                     },
                     {
                         id: 3,
-                        type: 'figure',
-                        message: 'Nhân vật mới được thêm: Hồ Chí Minh',
-                        time: '1 giờ trước',
-                        icon: '👤'
+                        type: "figure",
+                        message: "Nhân vật mới được thêm: Hồ Chí Minh",
+                        time: "1 giờ trước",
+                        icon: "👤",
                     },
                     {
                         id: 4,
-                        type: 'location',
-                        message: 'Địa điểm mới được thêm: Cố đô Huế',
-                        time: '2 giờ trước',
-                        icon: '📍'
+                        type: "location",
+                        message: "Địa điểm mới được thêm: Cố đô Huế",
+                        time: "2 giờ trước",
+                        icon: "📍",
                     },
                     {
                         id: 5,
-                        type: 'period',
-                        message: 'Thời kỳ mới được thêm: Thời kỳ Đồng Sơn',
-                        time: '3 giờ trước',
-                        icon: '⏰'
-                    }
+                        type: "period",
+                        message: "Thời kỳ mới được thêm: Thời kỳ Đồng Sơn",
+                        time: "3 giờ trước",
+                        icon: "⏰",
+                    },
                 ]);
             } catch (error) {
-                console.error('Error loading activities:', error);
+                console.error("Error loading activities:", error);
             } finally {
                 setLoading(false);
             }
@@ -61,17 +62,26 @@ const RecentActivity = () => {
 
     if (loading) {
         return (
-            <div className="recent-activity">
-                <div className="activity-header">
+            <div className={styles["recent-activity"]}>
+                <div className={styles["activity-header"]}>
                     <h3>Hoạt động gần đây</h3>
                 </div>
-                <div className="activity-list">
+                <div className={styles["activity-list"]}>
                     {[...Array(5)].map((_, index) => (
-                        <div key={index} className="activity-item loading">
-                            <div className="activity-icon skeleton"></div>
-                            <div className="activity-content">
-                                <div className="activity-message skeleton"></div>
-                                <div className="activity-time skeleton"></div>
+                        <div
+                            key={index}
+                            className={`${styles["activity-item"]} ${styles["loading"]}`}
+                        >
+                            <div
+                                className={`${styles["activity-icon"]} ${styles["skeleton"]}`}
+                            ></div>
+                            <div className={styles["activity-content"]}>
+                                <div
+                                    className={`${styles["activity-message"]} ${styles["skeleton"]}`}
+                                ></div>
+                                <div
+                                    className={`${styles["activity-time"]} ${styles["skeleton"]}`}
+                                ></div>
                             </div>
                         </div>
                     ))}
@@ -81,20 +91,24 @@ const RecentActivity = () => {
     }
 
     return (
-        <div className="recent-activity">
-            <div className="activity-header">
+        <div className={styles["recent-activity"]}>
+            <div className={styles["activity-header"]}>
                 <h3>Hoạt động gần đây</h3>
-                <button className="view-all-btn">Xem tất cả</button>
+                <button className={styles["view-all-btn"]}>Xem tất cả</button>
             </div>
-            <div className="activity-list">
+            <div className={styles["activity-list"]}>
                 {activities.map((activity) => (
-                    <div key={activity.id} className="activity-item">
-                        <div className="activity-icon">
+                    <div key={activity.id} className={styles["activity-item"]}>
+                        <div className={styles["activity-icon"]}>
                             {activity.icon}
                         </div>
-                        <div className="activity-content">
-                            <p className="activity-message">{activity.message}</p>
-                            <span className="activity-time">{activity.time}</span>
+                        <div className={styles["activity-content"]}>
+                            <p className={styles["activity-message"]}>
+                                {activity.message}
+                            </p>
+                            <span className={styles["activity-time"]}>
+                                {activity.time}
+                            </span>
                         </div>
                     </div>
                 ))}

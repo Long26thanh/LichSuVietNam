@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { periodService } from "@/services";
 import "./PeriodDetail.css";
+import { TextEditor } from "@/components";
 
-const PeriodDetail = () => {
+const PeriodDetail = ({ isPreview = false }) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [period, setPeriod] = useState(null);
@@ -14,15 +15,32 @@ const PeriodDetail = () => {
         const fetchPeriod = async () => {
             try {
                 setLoading(true);
-                const response = await periodService.getPeriodById(id);
+                // Sử dụng API khác nhau cho preview và xem thường
+                const response = isPreview
+                    ? await periodService.previewPeriod(id)
+                    : await periodService.getPeriodById(id);
+
                 if (!response.success) {
-                    setError("Lấy thông tin thời kỳ thất bại");
+                    setError(
+                        isPreview
+                            ? "Xem trước thời kỳ thất bại"
+                            : "Lấy thông tin thời kỳ thất bại"
+                    );
                 } else {
                     setPeriod(response.data);
                 }
             } catch (error) {
-                console.error("Lỗi lấy thông tin thời kỳ:", error);
-                setError("Lấy thông tin thời kỳ thất bại");
+                console.error(
+                    isPreview
+                        ? "Lỗi xem trước thời kỳ:"
+                        : "Lỗi lấy thông tin thời kỳ:",
+                    error
+                );
+                setError(
+                    isPreview
+                        ? "Xem trước thời kỳ thất bại"
+                        : "Lấy thông tin thời kỳ thất bại"
+                );
             } finally {
                 setLoading(false);
             }
@@ -30,7 +48,7 @@ const PeriodDetail = () => {
         if (id) {
             fetchPeriod();
         }
-    }, [id]);
+    }, [id, isPreview]);
 
     const formatYear = (year) => {
         return year < 0 ? `${Math.abs(year)} TCN` : `${year} SCN`;
@@ -73,8 +91,14 @@ const PeriodDetail = () => {
     return (
         <div className="period-detail">
             <button onClick={handleBackClick} className="back-button">
-                ← Quay lại dòng thời gian
+                ← Quay lại {isPreview ? "trang quản lý" : "dòng thời gian"}
             </button>
+
+            {isPreview && (
+                <div className="preview-banner">
+                    Đang xem trước - Chỉ admin mới nhìn thấy nội dung này
+                </div>
+            )}
 
             <div className="period-detail-header">
                 <h1 className="period-title">{period.name}</h1>

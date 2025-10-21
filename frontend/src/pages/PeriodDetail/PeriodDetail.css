@@ -9,7 +9,7 @@
 }
 
 .period-detail::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -63,7 +63,7 @@
 }
 
 .period-detail-header::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -121,7 +121,7 @@
 }
 
 .period-section::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -145,7 +145,7 @@
 }
 
 .section-title::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
@@ -184,7 +184,7 @@
 }
 
 .period-metadata-card::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;

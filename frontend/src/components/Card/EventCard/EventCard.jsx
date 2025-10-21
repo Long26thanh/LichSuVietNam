@@ -1,7 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import routes from "@/config/routes";
 import { formatShortDateRange } from "@/utils";
-import "./EventCard.css";
+import styles from "./EventCard.module.css";
 
 function EventCard({ event }) {
     const navigate = useNavigate();
@@ -13,43 +13,73 @@ function EventCard({ event }) {
     };
 
     return (
-        <div className="event-card" onClick={handleCardClick}>
-            <div className="event-card-header">
-                <h3 className="event-title">{event.name}</h3>
-                <span className="event-date">
+        <div className={styles["event-card"]} onClick={handleCardClick}>
+            <div className={styles["event-card-header"]}>
+                <h3 className={styles["event-title"]}>{event.name}</h3>
+                <span className={styles["event-date"]}>
                     {formatShortDateRange(
-                        { day: event.startDate, month: event.startMonth, year: event.startYear },
-                        { day: event.endDate, month: event.endMonth, year: event.endYear }
+                        {
+                            day: event.startDate,
+                            month: event.startMonth,
+                            year: event.startYear,
+                        },
+                        {
+                            day: event.endDate,
+                            month: event.endMonth,
+                            year: event.endYear,
+                        }
                     )}
                 </span>
             </div>
-            <div className="event-card-content">
+            <div className={styles["event-card-content"]}>
                 {event.summary && (
-                    <p className="event-description">{event.summary}</p>
+                    <p className={styles["event-description"]}>
+                        {event.summary}
+                    </p>
                 )}
                 {event.location && (
-                    <div className="event-location">
-                        <span className="location-label">Địa điểm:</span>
-                        <span className="location-value">{event.location}</span>
+                    <div className={styles["event-location"]}>
+                        <span className={styles["location-label"]}>
+                            Địa điểm:
+                        </span>
+                        <span className={styles["location-value"]}>
+                            {event.location}
+                        </span>
                     </div>
                 )}
                 {event.related_figures && event.related_figures.length > 0 && (
-                    <div className="related-figures">
-                        <span className="figures-label">
+                    <div className={styles["related-figures"]}>
+                        <span className={styles["figures-label"]}>
                             Nhân vật liên quan:
                         </span>
-                        <ul className="figures-list">
+                        <ul className={styles["figures-list"]}>
                             {event.related_figures.map((figure, index) => {
-                                const figureId = typeof figure === 'object' ? figure.id : null;
-                                const figureName = typeof figure === 'object' ? figure.name : figure;
-                                
+                                const figureId =
+                                    typeof figure === "object"
+                                        ? figure.id
+                                        : null;
+                                const figureName =
+                                    typeof figure === "object"
+                                        ? figure.name
+                                        : figure;
+
                                 return (
-                                    <li key={figureId || index} className="figure-item">
+                                    <li
+                                        key={figureId || index}
+                                        className={styles["figure-item"]}
+                                    >
                                         {figureId ? (
-                                            <Link 
-                                                to={routes.figureDetail.replace(":id", figureId)}
-                                                className="figure-link"
-                                                onClick={(e) => e.stopPropagation()}
+                                            <Link
+                                                to={routes.figureDetail.replace(
+                                                    ":id",
+                                                    figureId
+                                                )}
+                                                className={
+                                                    styles["figure-link"]
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                             >
                                                 {figureName}
                                             </Link>
@@ -63,8 +93,10 @@ function EventCard({ event }) {
                     </div>
                 )}
             </div>
-            <div className="event-card-footer">
-                <button className="view-details-btn">Xem chi tiết</button>
+            <div className={styles["event-card-footer"]}>
+                <button className={styles["view-details-btn"]}>
+                    Xem chi tiết
+                </button>
             </div>
         </div>
     );

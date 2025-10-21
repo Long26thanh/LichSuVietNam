@@ -31,11 +31,17 @@ class User {
             role = null,
             is_active = undefined,
             search = null,
+            currentUserRole = null, // Thêm role của người dùng hiện tại
         } = options;
         const offset = (page - 1) * limit;
         const conditions = [];
         const values = [];
         let index = 1;
+
+        // Nếu không phải SA, không cho phép xem tài khoản SA
+        if (currentUserRole !== "sa") {
+            conditions.push(`role != 'sa'`);
+        }
 
         // Xây dựng điều kiện truy vấn dựa trên các tham số
         if (role) {
@@ -81,8 +87,18 @@ class User {
             values.slice(0, -2)
         );
 
+        // Thêm thông tin permissions cho từng user
+        const usersWithPermissions = result.rows.map(row => {
+            const userProfile = new User(row).getPublicProfile();
+            userProfile.permissions = {
+                canDelete: currentUserRole === 'sa' && row.role !== 'sa',
+                canEditRole: currentUserRole === 'sa' && row.role !== 'sa'
+            };
+            return userProfile;
+        });
+
         return {
-            data: result.rows.map((row) => new User(row).getPublicProfile()),
+            data: usersWithPermissions,
             pagination: {
                 total: countResult.rows[0].total,
                 page: parseInt(page, 10),

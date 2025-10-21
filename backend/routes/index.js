@@ -4,6 +4,7 @@ import periodsRoute from "./periods.js";
 import locationsRoute from "./locations.js";
 import figuresRoute from "./figures.js";
 import eventsRoute from "./events.js";
+import previewRoute from "./preview.js";
 
 function routes(app) {
     app.get("/", (req, res) => {
@@ -17,6 +18,7 @@ function routes(app) {
     app.use("/api/locations", locationsRoute);
     app.use("/api/figures", figuresRoute);
     app.use("/api/events", eventsRoute);
+    app.use("/api/preview", previewRoute);
 }
 
 export default routes;

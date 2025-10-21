@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Button } from "@/components";
 import { validatePassword } from "@/utils";
-import "./ResetPasswordModal.css";
+import styles from "./ResetPasswordModal.module.css";
 
 const ResetPasswordModal = ({ user, onSubmit, onCancel, loading = false }) => {
     const [password, setPassword] = useState("");
@@ -34,16 +34,16 @@ const ResetPasswordModal = ({ user, onSubmit, onCancel, loading = false }) => {
     };
 
     return (
-        <div className="rp-modal">
-            <div className="rp-dialog">
-                <div className="rp-header">
+        <div className={styles["rp-modal"]}>
+            <div className={styles["rp-dialog"]}>
+                <div className={styles["rp-header"]}>
                     <h3>Đặt lại mật khẩu</h3>
                     <p>
                         Người dùng: <strong>@{user?.username}</strong>
                     </p>
                 </div>
-                <form className="rp-form" onSubmit={handleSubmit}>
-                    <div className="rp-group">
+                <form className={styles["rp-form"]} onSubmit={handleSubmit}>
+                    <div className={styles["rp-group"]}>
                         <label>Mật khẩu mới</label>
                         <input
                             type="password"
@@ -52,7 +52,7 @@ const ResetPasswordModal = ({ user, onSubmit, onCancel, loading = false }) => {
                             placeholder="Ít nhất 6 ký tự, có chữ hoa/thường và số"
                         />
                     </div>
-                    <div className="rp-group">
+                    <div className={styles["rp-group"]}>
                         <label>Xác nhận mật khẩu</label>
                         <input
                             type="password"
@@ -61,10 +61,14 @@ const ResetPasswordModal = ({ user, onSubmit, onCancel, loading = false }) => {
                             placeholder="Nhập lại mật khẩu mới"
                         />
                     </div>
-                    {error && <div className="rp-error">{error}</div>}
+                    {error && <div className={styles["rp-error"]}>{error}</div>}
 
-                    <div className="rp-actions">
-                        <Button type="button" variant="secondary" onClick={onCancel}>
+                    <div className={styles["rp-actions"]}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onCancel}
+                        >
                             Hủy
                         </Button>
                         <Button type="submit" disabled={!canSubmit || loading}>
@@ -78,5 +82,3 @@ const ResetPasswordModal = ({ user, onSubmit, onCancel, loading = false }) => {
 };
 
 export default ResetPasswordModal;
-
-

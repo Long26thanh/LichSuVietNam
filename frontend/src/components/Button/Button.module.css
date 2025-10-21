@@ -239,6 +239,63 @@
     background: rgba(185, 28, 28, 0.1);
 }
 
+/* Admin Specific Button Variants */
+.btnEdit {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+    box-shadow: 0 2px 4px rgba(30, 64, 175, 0.1);
+}
+
+.btnEdit:hover {
+    background: #bfdbfe;
+    color: #1e3a8a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(30, 64, 175, 0.2);
+}
+
+.btnReset {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+    box-shadow: 0 2px 4px rgba(217, 119, 6, 0.1);
+}
+
+.btnReset:hover {
+    background: #fde68a;
+    color: #b45309;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2);
+}
+
+.btnDelete {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+}
+
+.btnDelete:hover {
+    background: #fecaca;
+    color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
+}
+
+.btnView {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.1);
+}
+
+.btnView:hover {
+    background: #bbf7d0;
+    color: #15803d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(22, 163, 74, 0.2);
+}
+
 /* Button Sizes */
 .btnSmall {
     padding: 0.5rem 1rem;

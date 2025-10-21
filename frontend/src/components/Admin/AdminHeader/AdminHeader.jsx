@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import UserDropdown from "@/components/UserDropdown/UserDropdown";
-import "./AdminHeader.css";
+import styles from "./AdminHeader.module.css";
 
 const AdminHeader = ({ user, onToggleSidebar, onLogout }) => {
     const [notifications, setNotifications] = useState([]);
@@ -40,17 +40,20 @@ const AdminHeader = ({ user, onToggleSidebar, onLogout }) => {
     };
 
     return (
-        <header className="admin-header">
-            <div className="header-left">
-                <button className="sidebar-toggle" onClick={onToggleSidebar}>
+        <header className={styles["admin-header"]}>
+            <div className={styles["header-left"]}>
+                <button
+                    className={styles["sidebar-toggle"]}
+                    onClick={onToggleSidebar}
+                >
                     ☰
                 </button>
                 <h1>Dashboard</h1>
             </div>
 
-            <div className="header-right">
-                <div className="header-actions">
-                    <span className="welcome-text">
+            <div className={styles["header-right"]}>
+                <div className={styles["header-actions"]}>
+                    <span className={styles["welcome-text"]}>
                         Chào mừng, {user?.name || user?.username || "Admin"}
                     </span>
 
