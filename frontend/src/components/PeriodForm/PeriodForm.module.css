@@ -1,18 +1,35 @@
 .form {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
 }
 
-.title {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
+.formTitle {
+    font-size: 1.75rem;
     font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .formGroup {
@@ -22,30 +39,76 @@
 }
 
 .formGroup label {
-    font-weight: 500;
-    color: #333;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.25rem;
 }
 
 .formGroup input {
     padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
     font-size: 1rem;
+    transition: border-color 0.2s;
+    width: 100%;
 }
 
 .formGroup input:focus {
+    border-color: #6366f1;
     outline: none;
-    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.error {
-    color: #dc2626;
+.errorText {
+    color: #ef4444;
     font-size: 0.875rem;
+    margin-top: 0.25rem;
 }
 
 .yearInputs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-bottom: 1rem;
+}
+
+.formActions {
     display: flex;
-    gap: 1.5rem;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.editorSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.editorSection label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Additional styling for TextEditor component */
+.editorSection :global(.ql-editor) {
+    min-height: 180px;
+    font-size: 1rem;
+}
+
+.editorSection :global(.ql-container) {
+    border-radius: 0 0 6px 6px;
+    border-color: #d1d5db;
+}
+
+.editorSection :global(.ql-toolbar) {
+    border-radius: 6px 6px 0 0;
+    border-color: #d1d5db;
+    background-color: #f9fafb;
 }
 
 .yearInputs .formGroup {

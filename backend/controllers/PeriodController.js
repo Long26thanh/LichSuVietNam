@@ -1,13 +1,34 @@
 import Period from "../models/PeriodModel.js";
+import ViewModel from "../models/ViewModel.js";
+import Comment from "../models/CommentModel.js";
 
 class PeriodController {
     // Get /api/periods - Lấy danh sách tất cả các thời kỳ
-    static async getAllPeriods(req, res) {
+    static async getAll(req, res) {
         try {
             const periods = await Period.getAll();
+
+            // Lấy viewCount và commentCount cho tất cả periods
+            const periodIds = periods.map((period) => period.id);
+            const viewCounts = await ViewModel.getMultipleViewCounts(
+                "Thời kỳ",
+                periodIds
+            );
+            const commentCounts = await Comment.getMultipleCommentCounts(
+                "Thời kỳ",
+                periodIds
+            );
+
+            // Thêm viewCount và commentCount vào mỗi period
+            const periodsWithViews = periods.map((period) => ({
+                ...period,
+                viewCount: viewCounts[period.id] || 0,
+                commentCount: commentCounts[period.id] || 0,
+            }));
+
             return res.status(200).json({
                 success: true,
-                data: periods,
+                data: periodsWithViews,
             });
         } catch (error) {
             console.error("Lỗi khi lấy danh sách thời kỳ:", error);
@@ -19,20 +40,31 @@ class PeriodController {
     }
 
     // GET /api/periods/:id - Lấy thông tin chi tiết một thời kỳ theo ID
-    static async getPeriodById(req, res) {
+    static async getById(req, res) {
         try {
             const { id } = req.params;
             const period = await Period.getById(id);
-            console.log("Thông tin thời kỳ:", period);
             if (!period) {
                 return res.status(404).json({
                     success: false,
                     message: "Thời kỳ không tồn tại",
                 });
             }
+
+            // Lấy viewCount và commentCount cho period này
+            const viewCount = await ViewModel.getViewCount("Thời kỳ", id);
+            const commentCount = await Comment.countByPageTypeAndId(
+                "Thời kỳ",
+                id
+            );
+
             return res.status(200).json({
                 success: true,
-                data: period,
+                data: {
+                    ...period,
+                    viewCount: viewCount || 0,
+                    commentCount: commentCount || 0,
+                },
             });
         } catch (error) {
             console.error("Lỗi khi lấy thông tin thời kỳ:", error);
@@ -44,10 +76,10 @@ class PeriodController {
     }
 
     // Get /api/periods/:id/name - Lấy tên thời kỳ theo ID
-    static async getPeriodNameById(req, res) {
+    static async getNameById(req, res) {
         try {
             const { id } = req.params;
-            const name = await Period.getPeriodNameById(id);
+            const name = await Period.getNameById(id);
             return res.status(200).json({
                 success: true,
                 data: { name },
@@ -62,7 +94,7 @@ class PeriodController {
     }
 
     // Post /api/periods - Tạo mới một thời kỳ
-    static async createPeriod(req, res) {
+    static async create(req, res) {
         try {
             const { name, description, summary, start_year, end_year } =
                 req.body;
@@ -89,13 +121,13 @@ class PeriodController {
     }
 
     // Put /api/periods/:id - Cập nhật thông tin một thời kỳ
-    static async updatePeriod(req, res) {
+    static async update(req, res) {
         try {
             const { id } = req.params;
             const updateData = req.body;
 
-            // Thêm await khi gọi getPeriodById
-            const period = await Period.getPeriodById(id);
+            // Thêm await khi gọi getById (model method is getById)
+            const period = await Period.getById(id);
 
             if (!period) {
                 return res.status(404).json({
@@ -123,7 +155,7 @@ class PeriodController {
     }
 
     // Delete /api/periods/:id - Xóa một thời kỳ
-    static async deletePeriod(req, res) {
+    static async delete(req, res) {
         try {
             const { id } = req.params;
             const isDeleted = await Period.delete(id);

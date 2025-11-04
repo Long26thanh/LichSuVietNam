@@ -4,10 +4,11 @@
     background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
     position: relative;
     overflow: hidden;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .location-page::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -21,45 +22,25 @@
 /* Location Header */
 .location-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 3rem 2rem;
+    padding: 4rem 2rem 2rem 2rem;
     text-align: center;
     color: white;
     position: relative;
     overflow: hidden;
-    margin-bottom: 2rem;
-}
-
-.location-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    opacity: 0.3;
 }
 
 .location-title {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     font-weight: 800;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 1;
-    letter-spacing: -0.02em;
 }
 
 .location-description {
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: rgba(255, 255, 255, 0.9);
     max-width: 600px;
     margin: 0 auto;
-    line-height: 1.6;
-    position: relative;
-    z-index: 1;
-    font-weight: 300;
 }
 
 /* Search and Filter Wrapper */
@@ -263,8 +244,39 @@
 }
 
 .page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     color: #4a5568;
     font-weight: 600;
+}
+
+.page-select {
+    padding: 0.4rem 0.6rem;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4a5568;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 60px;
+}
+
+.page-select:hover {
+    border-color: rgba(102, 126, 234, 0.4);
+}
+
+.page-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.total-items {
+    color: #718096;
+    font-weight: 500;
 }
 
 /* Loading and Error States */
@@ -294,8 +306,12 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .loading-container p {
@@ -334,43 +350,43 @@
         padding: 3rem 1.5rem;
         margin-bottom: 2rem;
     }
-    
+
     .location-title {
         font-size: 2.5rem;
     }
-    
+
     .location-description {
         font-size: 1.1rem;
     }
-    
+
     .search-filter-wrapper {
         padding: 0 1rem;
         margin-bottom: 2rem;
     }
-    
+
     .filter-buttons {
         gap: 0.5rem;
     }
-    
+
     .filter-btn {
         padding: 0.6rem 1.2rem;
         font-size: 0.85rem;
     }
-    
+
     .locations-content {
         padding: 0 1rem 2rem 1rem;
     }
-    
+
     .locations-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
+
     .search-results-info {
         font-size: 0.8rem;
         padding: 0.4rem 0.8rem;
     }
-    
+
     .search-results-info .count {
         padding: 0.2rem 0.4rem;
     }
@@ -380,46 +396,46 @@
     .location-header {
         padding: 2rem 1rem;
     }
-    
+
     .location-title {
         font-size: 2rem;
     }
-    
+
     .location-description {
         font-size: 1rem;
     }
-    
+
     .search-filter-wrapper {
         padding: 0 0.5rem;
     }
-    
+
     .filter-buttons {
         flex-direction: column;
         align-items: center;
         gap: 0.5rem;
     }
-    
+
     .filter-btn {
         width: 100%;
         max-width: 200px;
     }
-    
+
     .locations-content {
         padding: 0 0.5rem 1.5rem 0.5rem;
     }
-    
+
     .locations-grid {
         gap: 1rem;
     }
-    
+
     .no-results {
         padding: 2rem 1rem;
     }
-    
+
     .no-results h3 {
         font-size: 1.3rem;
     }
-    
+
     .no-results p {
         font-size: 0.9rem;
     }
@@ -441,9 +457,21 @@
     animation: fadeInUp 0.6s ease-out;
 }
 
-.locations-grid > *:nth-child(1) { animation-delay: 0.1s; }
-.locations-grid > *:nth-child(2) { animation-delay: 0.2s; }
-.locations-grid > *:nth-child(3) { animation-delay: 0.3s; }
-.locations-grid > *:nth-child(4) { animation-delay: 0.4s; }
-.locations-grid > *:nth-child(5) { animation-delay: 0.5s; }
-.locations-grid > *:nth-child(6) { animation-delay: 0.6s; }
+.locations-grid > *:nth-child(1) {
+    animation-delay: 0.1s;
+}
+.locations-grid > *:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.locations-grid > *:nth-child(3) {
+    animation-delay: 0.3s;
+}
+.locations-grid > *:nth-child(4) {
+    animation-delay: 0.4s;
+}
+.locations-grid > *:nth-child(5) {
+    animation-delay: 0.5s;
+}
+.locations-grid > *:nth-child(6) {
+    animation-delay: 0.6s;
+}

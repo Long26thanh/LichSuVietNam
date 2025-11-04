@@ -4,6 +4,7 @@
     background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
     position: relative;
     overflow: hidden;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .figure-page::before {
@@ -21,44 +22,25 @@
 /* Figure Header */
 .figure-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 3rem 2rem;
+    padding: 4rem 2rem 2rem 2rem;
     text-align: center;
     color: white;
     position: relative;
     overflow: hidden;
-    margin-bottom: 2rem;
-}
-
-.figure-header::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    opacity: 0.3;
 }
 
 .figure-title {
-    font-size: 3.5rem;
-    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
     color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 1;
-    letter-spacing: -0.02em;
 }
 
 .figure-description {
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: rgba(255, 255, 255, 0.9);
     max-width: 600px;
     margin: 0 auto;
-    line-height: 1.6;
-    position: relative;
-    z-index: 1;
-    font-weight: 300;
 }
 
 /* Search Wrapper */
@@ -199,8 +181,39 @@
 }
 
 .page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     color: #4a5568;
     font-weight: 600;
+}
+
+.page-select {
+    padding: 0.4rem 0.6rem;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4a5568;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 60px;
+}
+
+.page-select:hover {
+    border-color: rgba(102, 126, 234, 0.4);
+}
+
+.page-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.total-items {
+    color: #718096;
+    font-weight: 500;
 }
 
 /* Loading and Error States */

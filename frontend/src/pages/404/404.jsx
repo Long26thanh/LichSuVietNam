@@ -1,19 +1,21 @@
 import config from "../../config";
-import "./404.css";
+import styles from "@/pages/404/404.module.css";
 
 function NotFound() {
     return (
-        <div className="notFoundContainer">
-            <div className="errorIllustration">🏛️</div>
-            <h1 className="error404">404</h1>
-            <h2 className="errorMessage">Không tìm thấy trang bạn yêu cầu</h2>
-            <p className="errorDescription">
+        <div className={styles.notFoundContainer}>
+            <div className={styles.errorIllustration}>🏛️</div>
+            <h1 className={styles.error404}>404</h1>
+            <h2 className={styles.errorMessage}>
+                Không tìm thấy trang bạn yêu cầu
+            </h2>
+            <p className={styles.errorDescription}>
                 Trang bạn đang tìm kiếm có thể đã bị xóa, đổi tên hoặc tạm thời
                 không khả dụng.
             </p>
-            <a className="homeLink" href={config.routes.home}>
+            <a className={styles.homeLink} href={config.routes.home}>
                 <svg
-                    className="homeIcon"
+                    className={styles.homeIcon}
                     viewBox="0 0 24 24"
                     fill="currentColor"
                 >

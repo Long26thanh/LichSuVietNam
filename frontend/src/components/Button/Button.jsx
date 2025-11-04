@@ -26,6 +26,9 @@ function Button({
             dark: styles.btnDark,
             ghost: styles.btnGhost,
             iconOnly: styles.btnIconOnly,
+            // Form specific variants
+            submit: styles.btnSubmit,
+            cancel: styles.btnCancel,
             // Admin specific variants
             edit: styles.btnEdit,
             reset: styles.btnReset,

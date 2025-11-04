@@ -31,12 +31,26 @@ class LocationService {
 
     async getLocationById(id) {
         const response = await apiClient.get(`/${id}`);
-        console.log(response.data);
         return response.data;
     }
 
     async getLocationNameById(id) {
         const response = await apiClient.get(`/${id}/name`);
+        return response.data;
+    }
+
+    async createLocation(locationData) {
+        const response = await apiClient.post("/", locationData);
+        return response.data;
+    }
+
+    async updateLocation(id, locationData) {
+        const response = await apiClient.put(`/${id}`, locationData);
+        return response.data;
+    }
+
+    async deleteLocation(id) {
+        const response = await apiClient.delete(`/${id}`);
         return response.data;
     }
 }

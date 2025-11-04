@@ -33,6 +33,7 @@ function AppContent() {
 
                     // Kiểm tra nếu là route admin cần bảo vệ
                     const isAdminRoute =
+                        route.path &&
                         route.path.startsWith("/admin") &&
                         route.path !== config.routes.admin;
 

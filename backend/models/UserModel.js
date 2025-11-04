@@ -24,7 +24,7 @@ class User {
         this.last_login = userData?.last_login;
     }
 
-    static async getAllUsers(options = {}) {
+    static async getAll(options = {}) {
         const {
             page = 1,
             limit = 20,
@@ -87,18 +87,8 @@ class User {
             values.slice(0, -2)
         );
 
-        // Thêm thông tin permissions cho từng user
-        const usersWithPermissions = result.rows.map(row => {
-            const userProfile = new User(row).getPublicProfile();
-            userProfile.permissions = {
-                canDelete: currentUserRole === 'sa' && row.role !== 'sa',
-                canEditRole: currentUserRole === 'sa' && row.role !== 'sa'
-            };
-            return userProfile;
-        });
-
         return {
-            data: usersWithPermissions,
+            data: result.rows.map((row) => new User(row).getPublicProfile()),
             pagination: {
                 total: countResult.rows[0].total,
                 page: parseInt(page, 10),
@@ -291,6 +281,38 @@ class User {
         } catch (error) {
             console.error("Lỗi khi tìm user theo email:", error);
             return null;
+        }
+    }
+
+    // Thống kê methods
+    static async count() {
+        try {
+            const result = await query(`SELECT COUNT(*) as count FROM users`);
+            return parseInt(result.rows[0].count, 10);
+        } catch (error) {
+            console.error("Error counting users:", error);
+            throw error;
+        }
+    }
+
+    static async getStatsByDateRange(startDate, endDate) {
+        try {
+            const result = await query(
+                `SELECT 
+                    DATE(created_at) as date,
+                    COUNT(*) as count,
+                    COUNT(CASE WHEN role = 'admin' THEN 1 END) as admin_count,
+                    COUNT(CASE WHEN role = 'user' THEN 1 END) as user_count
+                FROM users
+                WHERE created_at BETWEEN $1 AND $2
+                GROUP BY DATE(created_at)
+                ORDER BY date ASC`,
+                [startDate, endDate]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error("Error getting user stats by date range:", error);
+            throw error;
         }
     }
 }

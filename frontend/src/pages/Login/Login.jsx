@@ -73,7 +73,6 @@ function Login() {
         setError("");
         setSuccessMessage("");
         try {
-            console.log("Attempting user login with:", formData);
             const result = await userLogin({
                 username: formData.username,
                 password: formData.password,

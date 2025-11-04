@@ -234,8 +234,7 @@ class UserService {
 
     async createUser(userData) {
         try {
-            console.log(userData);
-            const response = await apiClient.post("/create", userData);
+            const response = await apiClient.post("/", userData);
             return response.data;
         } catch (error) {
             console.error("Error creating user:", error);

@@ -1,0 +1,169 @@
+.user-article-stats {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.user-stats-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 24px 0;
+}
+
+.user-stats-loading,
+.user-stats-empty {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #666;
+}
+
+.user-stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+}
+
+.summary-icon {
+    font-size: 36px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+}
+
+.summary-content {
+    flex: 1;
+}
+
+.summary-label {
+    margin: 0 0 4px 0;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.summary-value {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.user-stats-table-container {
+    overflow-x: auto;
+}
+
+.user-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-stats-table thead {
+    background: #f8f9fa;
+}
+
+.user-stats-table th {
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.user-stats-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.user-stats-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.article-title {
+    font-weight: 500;
+    color: #333;
+    max-width: 400px;
+}
+
+.article-date {
+    color: #666;
+    font-size: 14px;
+}
+
+.article-stat {
+    text-align: center;
+}
+
+.stat-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.stat-views {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.stat-comments {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+@media (max-width: 768px) {
+    .user-article-stats {
+        padding: 16px;
+    }
+
+    .user-stats-title {
+        font-size: 20px;
+    }
+
+    .user-stats-summary {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .summary-card {
+        padding: 16px;
+    }
+
+    .summary-icon {
+        font-size: 28px;
+        width: 48px;
+        height: 48px;
+    }
+
+    .summary-value {
+        font-size: 24px;
+    }
+
+    .user-stats-table th,
+    .user-stats-table td {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .article-title {
+        max-width: 200px;
+        font-size: 13px;
+    }
+}

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import locationService from "@/services/locationService";
+import { recordWebsiteView, recordLocationView } from "@/services/viewService";
+import { CommentSection } from "@/components";
 import "./LocationDetail.css";
 
 const LocationDetail = () => {
@@ -30,6 +32,14 @@ const LocationDetail = () => {
         };
         fetchDetail();
     }, [id]);
+
+    // Ghi nhận lượt xem
+    useEffect(() => {
+        if (item && item.id) {
+            recordWebsiteView();
+            recordLocationView(item.id);
+        }
+    }, [item]);
 
     const handleBack = () => nav(-1);
 
@@ -92,6 +102,9 @@ const LocationDetail = () => {
                     </section>
                 )}
             </main>
+
+            {/* Comment Section */}
+            <CommentSection pageType="Địa danh" pageId={item.id} />
         </div>
     );
 };

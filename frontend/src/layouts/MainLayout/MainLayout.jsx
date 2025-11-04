@@ -8,9 +8,8 @@ function MainLayout({ children }) {
 
     // Tự động chuyển đổi session type khi vào trang thường
     useEffect(() => {
-        if (sessionType !== 'user') {
-            console.log('Auto switching to user session in MainLayout');
-            switchSessionType('user');
+        if (sessionType !== "user") {
+            switchSessionType("user");
         }
     }, [sessionType, switchSessionType]);
 

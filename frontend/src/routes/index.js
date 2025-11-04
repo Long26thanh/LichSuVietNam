@@ -8,6 +8,7 @@ const routes = [
     { path: config.routes.register, page: Pages.Register },
     { path: config.routes.login, page: Pages.Login, layout: null },
     { path: config.routes.profile, page: Pages.Profile },
+    { path: config.routes.userArticles, page: Pages.UserArticles },
     { path: config.routes.timeline, page: Pages.TimeLine },
     { path: config.routes.periodDetail, page: Pages.PeriodDetail },
     { path: config.routes.locations, page: Pages.Location },
@@ -16,6 +17,8 @@ const routes = [
     { path: config.routes.figureDetail, page: Pages.FigureDetail },
     { path: config.routes.events, page: Pages.Event },
     { path: config.routes.eventDetail, page: Pages.EventDetail },
+    { path: config.routes.news, page: Pages.News },
+    { path: config.routes.articleDetail, page: Pages.ArticleDetail },
     // Admin routes
     { path: config.routes.admin, page: Pages.Admin, layout: null },
     { path: config.routes.adminLogin, page: Pages.Admin, layout: null },
@@ -45,8 +48,18 @@ const routes = [
         layout: AdminLayout,
     },
     {
+        path: config.routes.adminAddLocation,
+        page: Pages.AddLocation,
+        layout: AdminLayout,
+    },
+    {
         path: config.routes.adminPeriods,
         page: Pages.AdminPeriods,
+        layout: AdminLayout,
+    },
+    {
+        path: config.routes.adminArticles,
+        page: Pages.AdminArticles,
         layout: AdminLayout,
     },
     {
@@ -57,6 +70,26 @@ const routes = [
     {
         path: config.routes.periodPreview,
         page: Pages.PeriodDetail,
+        layout: AdminLayout,
+    },
+    {
+        path: config.routes.locationPreview,
+        page: Pages.LocationDetail,
+        layout: AdminLayout,
+    },
+    {
+        path: config.routes.figurePreview,
+        page: Pages.FigureDetail,
+        layout: AdminLayout,
+    },
+    {
+        path: config.routes.eventPreview,
+        page: Pages.EventDetail,
+        layout: AdminLayout,
+    },
+    {
+        path: config.routes.articlePreview,
+        page: Pages.ArticleDetail,
         layout: AdminLayout,
     },
 ];

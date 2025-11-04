@@ -21,7 +21,7 @@ class Period {
     }
 
     // Lấy thông tin thời kỳ theo ID
-    static async getPeriodNameById(id) {
+    static async getNameById(id) {
         const result = await query(
             `SELECT "TenThoiKy" FROM "ThoiKy" WHERE "MaThoiKy" = $1`,
             [id]
@@ -32,7 +32,7 @@ class Period {
         return result.rows[0].TenThoiKy;
     }
 
-    static async getPeriodById(id) {
+    static async getById(id) {
         const result = await query(
             `SELECT * FROM "ThoiKy" WHERE "MaThoiKy" = $1`,
             [id]
@@ -117,6 +117,19 @@ class Period {
             [`%${name}%`]
         );
         return result.rows.map((row) => new Period(row));
+    }
+
+    // Thống kê methods
+    static async count() {
+        try {
+            const result = await query(
+                `SELECT COUNT(*) as count FROM "ThoiKy"`
+            );
+            return parseInt(result.rows[0].count, 10);
+        } catch (error) {
+            console.error("Error counting periods:", error);
+            throw error;
+        }
     }
 }
 

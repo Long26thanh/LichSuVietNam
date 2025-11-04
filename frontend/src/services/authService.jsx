@@ -63,7 +63,7 @@ class AuthService {
         // Con trỏ tiện dụng trỏ tới session hiện tại để interceptor sử dụng
         const current = this.getCurrentSession();
         this.token = current.token || null;
-        this.refreshToken = current.refreshToken || null;
+        this.currentRefreshToken = current.refreshToken || null;
         this.user = current.user || null;
         this.tokenRefreshPromise = null;
         this.validationInProgress = false;
@@ -124,6 +124,12 @@ class AuthService {
             (response) => response,
             async (error) => {
                 const originalRequest = error.config;
+
+                // Bỏ qua refresh token nếu có flag _skipAuthRefresh (như logout)
+                if (originalRequest._skipAuthRefresh) {
+                    return Promise.reject(error);
+                }
+
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true;
                     try {
@@ -146,6 +152,12 @@ class AuthService {
             (response) => response,
             async (error) => {
                 const originalRequest = error.config;
+
+                // Bỏ qua refresh token nếu có flag _skipAuthRefresh (như logout)
+                if (originalRequest._skipAuthRefresh) {
+                    return Promise.reject(error);
+                }
+
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true;
                     try {
@@ -195,7 +207,7 @@ class AuthService {
         // Đồng bộ con trỏ token/user hiện tại và interceptor
         const currentSession = this.getCurrentSession();
         this.token = currentSession.token || null;
-        this.refreshToken = currentSession.refreshToken || null;
+        this.currentRefreshToken = currentSession.refreshToken || null;
         this.user = currentSession.user || null;
         this.updateInterceptors(currentSession.token);
     }
@@ -232,11 +244,9 @@ class AuthService {
 
         if (isAdminRoute && this.currentSessionType !== "admin") {
             // Đang ở trang admin nhưng session type là user
-            console.log("Auto switching to admin session for admin route");
             this.switchToSession("admin");
         } else if (!isAdminRoute && this.currentSessionType !== "user") {
             // Đang ở trang thường nhưng session type là admin
-            console.log("Auto switching to user session for user route");
             this.switchToSession("user");
         }
     }
@@ -311,7 +321,6 @@ class AuthService {
             const isBackendAvailable = await testApiConnectivity();
             // Nếu backend không khả dụng, trả về user đã lưu (nếu có)
             if (!isBackendAvailable) {
-                console.log("Backend API không khả dụng");
                 if (currentSession.token && currentSession.user) {
                     this.lastValidationTime = Date.now();
                     return currentSession.user;
@@ -399,70 +408,74 @@ class AuthService {
 
     // Hàm refresh token
     async refreshToken() {
-        // Nếu đã có một lần refresh đang diễn ra, chờ nó hoàn thành
         if (this.tokenRefreshPromise) {
             return this.tokenRefreshPromise;
         }
 
-        this.tokenRefreshPromise = this._performTokenRefresh();
+        this.tokenRefreshPromise = new Promise(async (resolve, reject) => {
+            try {
+                if (!this.currentRefreshToken) {
+                    throw new Error("No refresh token available");
+                }
 
-        try {
-            const result = await this.tokenRefreshPromise;
-            return result;
-        } finally {
-            this.tokenRefreshPromise = null;
-        }
+                const response = await apiClient.post("/refresh-token", {
+                    refreshToken: this.currentRefreshToken,
+                });
+
+                const { accessToken: newToken, refreshToken: newRefreshToken } =
+                    response.data.tokens;
+
+                // Update tokens based on current session type
+                if (this.currentSessionType === "admin") {
+                    this.adminToken = newToken;
+                    this.adminRefreshToken = newRefreshToken;
+                    localStorage.setItem("admin_auth_token", newToken);
+                    localStorage.setItem(
+                        "admin_refresh_token",
+                        newRefreshToken
+                    );
+                } else {
+                    this.userToken = newToken;
+                    this.userRefreshToken = newRefreshToken;
+                    localStorage.setItem("auth_token", newToken);
+                    localStorage.setItem("refresh_token", newRefreshToken);
+                }
+
+                // Update current pointers
+                this.token = newToken;
+                this.currentRefreshToken = newRefreshToken;
+
+                // Update interceptors with new token
+                this.updateInterceptors(newToken);
+
+                resolve(newToken);
+            } catch (error) {
+                console.error("Token refresh failed:", error);
+                // Clear tokens on refresh failure
+                if (this.currentSessionType === "admin") {
+                    this.adminToken = null;
+                    this.adminRefreshToken = null;
+                    localStorage.removeItem("admin_auth_token");
+                    localStorage.removeItem("admin_refresh_token");
+                } else {
+                    this.userToken = null;
+                    this.userRefreshToken = null;
+                    localStorage.removeItem("auth_token");
+                    localStorage.removeItem("refresh_token");
+                }
+                this.token = null;
+                this.currentRefreshToken = null;
+                reject(error);
+            } finally {
+                this.tokenRefreshPromise = null;
+            }
+        });
+
+        return this.tokenRefreshPromise;
     }
-
-    // Thực hiện refresh token
-    async _performTokenRefresh() {
-        try {
-            if (!this.refreshToken) {
-                throw new Error("Không có refresh token");
-            }
-
-            const response = await apiClient.post("/refresh-token", {
-                refreshToken: this.refreshToken,
-            });
-
-            const data = response.data;
-
-            if (!data.success) {
-                throw new Error(data.message || "Token refresh thất bại");
-            }
-
-            // Cập nhật token mới
-            this.token = data.tokens.accessToken;
-            this.refreshToken = data.tokens.refreshToken;
-
-            // Ghi theo session hiện tại (admin/user) để các service khác đọc đúng
-            if (this.currentSessionType === "admin") {
-                this.adminToken = this.token;
-                this.adminRefreshToken = this.refreshToken;
-                localStorage.setItem("admin_auth_token", this.token);
-                localStorage.setItem("admin_refresh_token", this.refreshToken);
-            } else {
-                this.userToken = this.token;
-                this.userRefreshToken = this.refreshToken;
-                localStorage.setItem("auth_token", this.token);
-                localStorage.setItem("refresh_token", this.refreshToken);
-            }
-
-            // Đồng bộ interceptor với token mới
-            this.updateInterceptors(this.token);
-
-            // Lên lịch refresh token tiếp theo
-            this.scheduleTokenRefresh(data.expiresIn);
-            return data;
-        } catch (error) {
-            console.error("AuthService: Token refresh error", error);
-            // Nếu refresh token cũng hết hạn, đăng xuất
-            if (error.response?.status === 401) {
-                this.logout();
-            }
-            throw error;
-        }
-    }
+    // ===========================
+    // Các hàm liên quan đến authentication
+    // ===========================
 
     scheduleTokenRefresh = (expiresIn) => {
         // Lên lịch refresh token trước khi nó hết hạn
@@ -472,16 +485,13 @@ class AuthService {
 
         // Refresh token trước 5 phút (300000 ms) so với thời gian hết hạn
         const refreshTime = Math.max(expiresIn - 300000, 60000); // Minimum 1 minute
-        console.log(
-            `Scheduling token refresh in ${refreshTime / 1000} seconds`
-        );
 
         // Lưu thời điểm hết hạn để dùng khi có tương tác
-        this.tokenExpiresAt = Date.now() + (typeof expiresIn === "number" ? expiresIn : 0);
+        this.tokenExpiresAt =
+            Date.now() + (typeof expiresIn === "number" ? expiresIn : 0);
 
         this.refreshTimer = setTimeout(async () => {
             try {
-                console.log("Attempting automatic token refresh...");
                 await this.refreshToken();
             } catch (error) {
                 console.error("Automatic token refresh failed:", error);
@@ -529,15 +539,6 @@ class AuthService {
         const hasToken = !!currentSession.token;
         const hasUser = !!currentSession.user;
         const result = hasToken && hasUser;
-        console.log(
-            "AuthService: isAuthenticated =",
-            hasToken,
-            hasUser,
-            "=>",
-            result,
-            "session type:",
-            this.currentSessionType
-        );
         return result;
     };
 
@@ -616,15 +617,25 @@ class AuthService {
     // Hàm đăng xuất session hiện tại
     async logout() {
         try {
+            // Chỉ gọi API logout nếu có token hợp lệ
+            // Nếu token hết hạn, không cần gọi API vì backend không track session
             const currentSession = this.getCurrentSession();
             if (currentSession.token) {
-                await apiClient.post("/logout");
+                // Thêm flag để interceptor không retry
+                await apiClient.post(
+                    "/logout",
+                    {},
+                    {
+                        _skipAuthRefresh: true, // Custom flag để bỏ qua refresh token
+                    }
+                );
             }
         } catch (error) {
-            console.error("Logout error:", error);
+            // Bỏ qua lỗi logout API, vẫn xóa local session
+            // Debug log intentionally removed to reduce console noise
         }
 
-        // Xóa session hiện tại
+        // Luôn xóa session local dù API có lỗi hay không
         if (this.currentSessionType === "admin") {
             this.adminToken = null;
             this.adminRefreshToken = null;

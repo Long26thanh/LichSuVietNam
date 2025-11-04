@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components";
+import { Button, ImageUpload } from "@/components";
 import {
     validateUsername,
     validateEmail,
@@ -146,12 +146,12 @@ const UserForm = ({
         <div className={styles["user-form-modal"]}>
             <div className={styles["user-form-dialog"]}>
                 <div className={styles["user-form-header"]}>
-                    <h3>
+                    <h2 className={styles.formTitle}>
                         {title ||
                             (isEdit
                                 ? "Cập nhật người dùng"
                                 : "Thêm người dùng")}
-                    </h3>
+                    </h2>
                 </div>
                 <form className={styles["user-form"]} onSubmit={handleSubmit}>
                     <div className={styles.grid}>
@@ -273,17 +273,23 @@ const UserForm = ({
                                 onChange={handleChange}
                             />
                         </div>
+                    </div>
 
-                        <div className={styles["form-group"]}>
-                            <label>Ảnh đại diện (URL)</label>
-                            <input
-                                name="avatar_url"
-                                value={values.avatar_url}
-                                onChange={handleChange}
-                                placeholder="https://..."
-                            />
-                        </div>
+                    <ImageUpload
+                        value={values.avatar_url}
+                        onChange={(value) =>
+                            setValues((prev) => ({
+                                ...prev,
+                                avatar_url: value,
+                            }))
+                        }
+                        label="Ảnh đại diện"
+                        helpText="Ảnh đại diện sẽ hiển thị trong hồ sơ và bình luận của bạn"
+                        aspectRatio="1/1"
+                        maxSize={3}
+                    />
 
+                    <div className={styles["form-row"]}>
                         <div
                             className={`${styles["form-group"]} ${styles["form-group--full"]}`}
                         >
@@ -314,12 +320,16 @@ const UserForm = ({
                     <div className={styles["form-actions"]}>
                         <Button
                             type="button"
-                            variant="secondary"
+                            variant="cancel"
                             onClick={onCancel}
                         >
                             Hủy
                         </Button>
-                        <Button type="submit" disabled={loading}>
+                        <Button
+                            type="submit"
+                            variant="submit"
+                            disabled={loading}
+                        >
                             {loading
                                 ? "Đang lưu..."
                                 : isEdit

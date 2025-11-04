@@ -3,8 +3,10 @@ import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import eventService from "@/services/eventService";
 import locationService from "@/services/locationService";
 import periodService from "@/services/periodService";
+import { recordWebsiteView, recordEventView } from "@/services/viewService";
 import routes from "@/config/routes";
 import { formatDateRange } from "@/utils";
+import { CommentSection } from "@/components";
 import "./EventDetail.css";
 
 const EventDetail = () => {
@@ -40,40 +42,55 @@ const EventDetail = () => {
     // Load location and period names after item is available
     useEffect(() => {
         if (!item) return;
-        
+
         const loadNames = async () => {
             try {
                 const promises = [];
-                
+
                 if (item.locationId) {
                     promises.push(
-                        locationService.getLocationNameById(item.locationId)
-                            .then(res => res?.success ? res.data?.name : null)
+                        locationService
+                            .getLocationNameById(item.locationId)
+                            .then((res) =>
+                                res?.success ? res.data?.name : null
+                            )
                             .catch(() => null)
                     );
                 } else {
                     promises.push(Promise.resolve(null));
                 }
-                
+
                 if (item.periodId) {
                     promises.push(
-                        periodService.getPeriodNameById(item.periodId)
-                            .then(res => res?.success ? res.data?.name : null)
+                        periodService
+                            .getPeriodNameById(item.periodId)
+                            .then((res) =>
+                                res?.success ? res.data?.name : null
+                            )
                             .catch(() => null)
                     );
                 } else {
                     promises.push(Promise.resolve(null));
                 }
-                
-                const [locationNameResult, periodNameResult] = await Promise.all(promises);
+
+                const [locationNameResult, periodNameResult] =
+                    await Promise.all(promises);
                 setLocationName(locationNameResult);
                 setPeriodName(periodNameResult);
             } catch (error) {
                 console.error("Error loading names:", error);
             }
         };
-        
+
         loadNames();
+    }, [item]);
+
+    // Ghi nhận lượt xem
+    useEffect(() => {
+        if (item && item.id) {
+            recordWebsiteView();
+            recordEventView(item.id);
+        }
     }, [item]);
 
     const handleBack = () => nav(-1);
@@ -207,6 +224,9 @@ const EventDetail = () => {
                     </section>
                 )}
             </main>
+
+            {/* Comment Section */}
+            <CommentSection pageType="Sự kiện" pageId={item.id} />
         </div>
     );
 };

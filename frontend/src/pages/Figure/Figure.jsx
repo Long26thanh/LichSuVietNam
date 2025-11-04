@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Search from "@/components/Search/Search";
 import FigureCard from "@/components/Card/FigureCard/FigureCard";
 import figureService from "@/services/figureService";
+import { recordWebsiteView } from "@/services/viewService";
 import "./Figure.css";
 
 const Figure = () => {
@@ -13,8 +14,15 @@ const Figure = () => {
     const [showResultsInfo, setShowResultsInfo] = useState(false);
     const [page, setPage] = useState(1);
     const [limit] = useState(12);
+    const [totalPages, setTotalPages] = useState(1);
+    const [total, setTotal] = useState(0);
     const debounceRef = useRef(null);
     const abortRef = useRef(null);
+
+    // Track website view
+    useEffect(() => {
+        recordWebsiteView();
+    }, []);
 
     // Lấy dữ liệu từ API khi component được mount
     useEffect(() => {
@@ -37,8 +45,14 @@ const Figure = () => {
                     throw new Error("Failed to fetch figures");
                 }
                 const data = response.data;
-                console.log("Fetched figures:", data);
+                const pagination = response.pagination || {
+                    total: 0,
+                    totalPages: 1,
+                };
+
                 setFigures(data);
+                setTotal(pagination.total);
+                setTotalPages(pagination.totalPages);
             } catch (error) {
                 if (
                     error.name !== "CanceledError" &&
@@ -152,29 +166,58 @@ const Figure = () => {
                 ) : (
                     <div className="figures-grid">
                         {filteredFigures.map((figure) => (
-                            <FigureCard key={figure.id} figure={figure} />
+                            <FigureCard
+                                key={figure.id}
+                                figure={figure}
+                                viewCount={figure.viewCount || 0}
+                                commentCount={figure.commentCount || 0}
+                            />
                         ))}
                     </div>
                 )}
 
                 {/* Pagination */}
-                <div className="pagination">
-                    <button
-                        className="page-btn"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                    >
-                        ← Trang trước
-                    </button>
-                    <span className="page-info">Trang {page}</span>
-                    <button
-                        className="page-btn"
-                        onClick={() => setPage((p) => p + 1)}
-                        disabled={filteredFigures.length < limit}
-                    >
-                        Trang sau →
-                    </button>
-                </div>
+                {totalPages > 1 && (
+                    <div className="pagination">
+                        <button
+                            className="page-btn"
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                        >
+                            ← Trang trước
+                        </button>
+                        <div className="page-info">
+                            <span>Trang</span>
+                            <select
+                                value={page}
+                                onChange={(e) =>
+                                    setPage(parseInt(e.target.value))
+                                }
+                                className="page-select"
+                            >
+                                {Array.from(
+                                    { length: totalPages },
+                                    (_, i) => i + 1
+                                ).map((p) => (
+                                    <option key={p} value={p}>
+                                        {p}
+                                    </option>
+                                ))}
+                            </select>
+                            <span>/ {totalPages}</span>
+                            <span className="total-items">• Tổng {total}</span>
+                        </div>
+                        <button
+                            className="page-btn"
+                            onClick={() =>
+                                setPage((p) => Math.min(totalPages, p + 1))
+                            }
+                            disabled={page >= totalPages}
+                        >
+                            Trang sau →
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

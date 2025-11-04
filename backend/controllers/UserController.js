@@ -41,7 +41,7 @@ class UserController {
     }
 
     // [Get] /users - Lấy danh sách người dùng với phân trang và lọc
-    async getAllUsers(req, res) {
+    async getAll(req, res) {
         try {
             const { page = 1, limit = 10, q, role, status } = req.query;
 
@@ -69,7 +69,7 @@ class UserController {
                         : undefined,
                 currentUserRole: req.user.role, // Truyền role của người dùng hiện tại
             };
-            const result = await User.getAllUsers(options);
+            const result = await User.getAll(options);
             return res.json({
                 success: true,
                 message: "Lấy danh sách người dùng thành công",
@@ -266,7 +266,6 @@ class UserController {
         try {
             const userId = req.params?.id || req.user?.id || req.body.id;
             const updateData = req.body;
-            console.log("Update data received:", updateData);
 
             // Loại bỏ các trường không được phép cập nhật
             delete updateData.id;

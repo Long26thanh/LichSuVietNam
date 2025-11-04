@@ -14,6 +14,16 @@
     color: #333;
 }
 
+.locations-table td.center-content {
+    text-align: center;
+}
+
+/* Căn giữa cột vị trí và ngày tạo */
+.locations-table td:nth-child(2),
+.locations-table td:nth-child(4) {
+    text-align: center;
+}
+
 .page-header p {
     margin: 0;
     color: #666;
@@ -29,14 +39,94 @@
     text-align: center;
 }
 
-.coming-soon h2 {
-    margin: 0 0 15px 0;
-    font-size: 1.5rem;
-    color: #666;
+.locations-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
 }
 
-.coming-soon p {
+.locations-table th {
+    background: #f8f9fa;
+    padding: 16px 12px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.locations-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.locations-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
     margin: 0;
-    color: #999;
-    font-size: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+.close-button:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Adjust form within modal */
+.modal-body form {
+    margin: 0;
+    box-shadow: none;
+    padding: 0;
 }

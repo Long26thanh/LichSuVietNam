@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Search from "@/components/Search/Search";
 import EventCard from "@/components/Card/EventCard/EventCard";
 import { eventService } from "@/services";
+import { recordWebsiteView } from "@/services/viewService";
 import "./Event.css";
 import { TextEditor } from "../../components";
 
@@ -14,8 +15,15 @@ function Event() {
     const [showResultsInfo, setShowResultsInfo] = useState(false);
     const [page, setPage] = useState(1);
     const [limit] = useState(12);
+    const [totalPages, setTotalPages] = useState(1);
+    const [total, setTotal] = useState(0);
     const debounceRef = useRef(null);
     const abortRef = useRef(null);
+
+    // Track website view
+    useEffect(() => {
+        recordWebsiteView();
+    }, []);
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -36,7 +44,15 @@ function Event() {
                 if (!response.success) {
                     throw new Error("Failed to fetch events");
                 }
-                setEvents(response.data || []);
+                const data = response.data || [];
+                const pagination = response.pagination || {
+                    total: 0,
+                    totalPages: 1,
+                };
+
+                setEvents(data);
+                setTotal(pagination.total);
+                setTotalPages(pagination.totalPages);
             } catch (err) {
                 if (err.name !== "CanceledError" && err.name !== "AbortError") {
                     setError(err.message);
@@ -134,28 +150,57 @@ function Event() {
                 ) : (
                     <div className="events-grid">
                         {filteredEvents.map((event) => (
-                            <EventCard key={event.id} event={event} />
+                            <EventCard
+                                key={event.id}
+                                event={event}
+                                viewCount={event.viewCount || 0}
+                                commentCount={event.commentCount || 0}
+                            />
                         ))}
                     </div>
                 )}
 
-                <div className="pagination">
-                    <button
-                        className="page-btn"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                    >
-                        ← Trang trước
-                    </button>
-                    <span className="page-info">Trang {page}</span>
-                    <button
-                        className="page-btn"
-                        onClick={() => setPage((p) => p + 1)}
-                        disabled={filteredEvents.length < limit}
-                    >
-                        Trang sau →
-                    </button>
-                </div>
+                {totalPages > 1 && (
+                    <div className="pagination">
+                        <button
+                            className="page-btn"
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                        >
+                            ← Trang trước
+                        </button>
+                        <div className="page-info">
+                            <span>Trang</span>
+                            <select
+                                value={page}
+                                onChange={(e) =>
+                                    setPage(parseInt(e.target.value))
+                                }
+                                className="page-select"
+                            >
+                                {Array.from(
+                                    { length: totalPages },
+                                    (_, i) => i + 1
+                                ).map((p) => (
+                                    <option key={p} value={p}>
+                                        {p}
+                                    </option>
+                                ))}
+                            </select>
+                            <span>/ {totalPages}</span>
+                            <span className="total-items">• Tổng {total}</span>
+                        </div>
+                        <button
+                            className="page-btn"
+                            onClick={() =>
+                                setPage((p) => Math.min(totalPages, p + 1))
+                            }
+                            disabled={page >= totalPages}
+                        >
+                            Trang sau →
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

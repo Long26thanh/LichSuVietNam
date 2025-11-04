@@ -75,16 +75,8 @@ function Register() {
                 "Tên người dùng chỉ chứa chữ cái, số, gạch dưới và từ 3-30 ký tự";
         }
 
-        if (username && userService.getUserByUsername(username)) {
-            newErrors.username = "Tên người dùng đã tồn tại";
-        }
-
         if (!validateEmail(email)) {
             newErrors.email = "Vui lòng nhập email hợp lệ";
-        }
-
-        if (email && userService.getUserByEmail(email)) {
-            newErrors.email = "Email đã được sử dụng";
         }
 
         if (!validatePassword(password)) {
@@ -110,6 +102,27 @@ function Register() {
         if (Object.keys(formErrors).length > 0) {
             setErrors(formErrors);
             return;
+        }
+
+        // Kiểm tra tồn tại username/email trên server (async)
+        try {
+            const [usernameRes, emailRes] = await Promise.all([
+                userService.getUserByUsername(formData.username),
+                userService.getUserByEmail(formData.email),
+            ]);
+
+            if (usernameRes && usernameRes.success && usernameRes.data) {
+                setErrors({ username: "Tên người dùng đã tồn tại" });
+                return;
+            }
+
+            if (emailRes && emailRes.success && emailRes.data) {
+                setErrors({ email: "Email đã được sử dụng" });
+                return;
+            }
+        } catch (err) {
+            console.error("Error checking username/email existence:", err);
+            // Nếu có lỗi khi gọi API, tiếp tục và để backend trả lỗi chính xác
         }
 
         setIsSubmitting(true);

@@ -1,62 +1,591 @@
 .home {
-    padding: 2rem 0;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.home h1 {
-    font-size: 2.5rem;
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 5rem 2rem;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.2;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.hero-description {
+    font-size: 1.25rem;
+    margin: 0 0 2.5rem 0;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.hero-btn {
+    padding: 0.875rem 2rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.hero-btn.primary {
+    background: white;
+    color: #667eea;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.hero-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.hero-btn.secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    backdrop-filter: blur(10px);
+}
+
+.hero-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Home Sections */
+.home-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
+
+/* Tăng khoảng cách giữa các sections trên PC */
+@media (min-width: 1024px) {
+    .home-section {
+        max-width: 1400px;
+        padding: 5rem 3rem;
+    }
+
+    .home-section + .home-section {
+        margin-top: 2rem;
+    }
+}
+
+@media (min-width: 1400px) {
+    .home-section {
+        max-width: 1400px;
+        padding: 6rem 4rem;
+    }
+
+    .home-section + .home-section {
+        margin-top: 3rem;
+    }
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+    .section-header {
+        margin-bottom: 3.5rem;
+    }
+}
+
+.section-title {
+    font-size: 2rem;
     font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 1rem;
-    text-align: center;
+    color: #1e293b;
+    margin: 0;
 }
 
-.home p {
+.view-all {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.view-all:hover {
+    color: #764ba2;
+    transform: translateX(4px);
+}
+
+/* Loading */
+.loading-container {
+    text-align: center;
+    padding: 4rem 2rem;
     font-size: 1.125rem;
-    color: #6b7280;
+    color: #64748b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* No Data */
+.no-data-container {
     text-align: center;
-    margin-bottom: 2rem;
-    line-height: 1.6;
+    padding: 4rem 2rem;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
-/* Demo content để test */
-.demo-content {
-    background: #f9fafb;
-    border-radius: 8px;
-    padding: 2rem;
-    margin: 2rem 0;
+.no-data-container h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 1rem 0;
+}
+
+.no-data-container p {
+    font-size: 1.125rem;
+    color: #64748b;
+    line-height: 1.7;
+    margin: 0.5rem 0;
+}
+
+/* Timeline Section - Special styling for timeline - Full Width */
+.timeline-section {
+    background: white;
+    padding: 4rem 0;
+    margin: 0;
+    width: 100%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Timeline Section Header */
+.timeline-section-header {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem 2rem 2rem;
     text-align: center;
 }
 
-.demo-content h2 {
-    font-size: 1.5rem;
-    color: #374151;
-    margin-bottom: 1rem;
+.timeline-section-header .section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
 }
 
-.demo-content p {
-    color: #6b7280;
+/* Home Timeline Container với đường line - Giới hạn chiều rộng và căn giữa */
+.home-timeline-container {
+    position: relative;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem 2rem;
+}
+
+/* Timeline Line - Đường chia đôi */
+.home-timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    transform: translateX(-50%);
+    border-radius: 2px;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    z-index: 1;
+}
+
+/* Timeline Item Container */
+.home-timeline-item-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    align-items: center;
+}
+
+.home-timeline-item-container:last-child {
     margin-bottom: 0;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .home h1 {
-        font-size: 2rem;
-    }
+/* Timeline Items Left/Right */
+.home-timeline-item-left,
+.home-timeline-item-right {
+    min-height: 200px;
+}
 
-    .demo-content {
-        padding: 1.5rem;
-        margin: 1.5rem 0;
+/* Timeline Marker - Chấm tròn giữa */
+.home-timeline-marker {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2),
+        0 4px 12px rgba(102, 126, 234, 0.3);
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+/* Timeline View All Button Container */
+.timeline-view-all-container {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 2rem 1rem 2rem;
+}
+
+.timeline-view-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.timeline-view-all-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+}
+
+.timeline-view-all-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.timeline-view-all-btn:hover svg {
+    transform: translateX(4px);
+}
+
+/* Home Grid - Giống như news-grid, figure-grid, event-grid */
+.home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2.5rem;
+    padding: 0 1rem;
+    row-gap: 3rem;
+}
+
+/* Responsive cho màn hình lớn */
+@media (min-width: 1200px) {
+    .home-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3rem;
+        row-gap: 3.5rem;
+        padding: 0 2rem;
     }
 }
 
-@media (max-width: 640px) {
-    .home h1 {
+@media (min-width: 1600px) {
+    .home-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3.5rem;
+        row-gap: 4rem;
+        padding: 0 2rem;
+    }
+}
+
+/* Call to Action Section */
+.cta-section {
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.15);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.cta-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 1rem 0;
+}
+
+.cta-description {
+    font-size: 1.125rem;
+    color: #64748b;
+    margin: 0 0 2rem 0;
+    line-height: 1.7;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .hero-title {
+        font-size: 3rem;
+    }
+
+    .section-title {
         font-size: 1.75rem;
     }
 
-    .demo-content {
-        padding: 1rem;
-        margin: 1rem 0;
+    .cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 4rem 1.5rem;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-description {
+        font-size: 1.125rem;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+    }
+
+    .hero-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .home-section {
+        padding: 3rem 1.5rem;
+    }
+
+    .timeline-section {
+        padding: 3rem 0;
+    }
+
+    .timeline-section-header {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+
+    .timeline-section-header .section-title {
+        font-size: 2rem;
+    }
+
+    .home-timeline-container {
+        padding: 2rem 1rem;
+    }
+
+    .timeline-view-all-container {
+        padding: 2rem 1.5rem 1rem 1.5rem;
+    }
+
+    .timeline-view-all-btn {
+        width: 100%;
+        max-width: 400px;
+        justify-content: center;
+    }
+
+    .home-timeline-item-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-left: 2.5rem;
+    }
+
+    .home-timeline-line {
+        left: 20px;
+    }
+
+    .home-timeline-marker {
+        position: absolute;
+        left: 11px;
+        top: 20px;
+    }
+
+    .home-timeline-item-left,
+    .home-timeline-item-right {
+        grid-column: 1;
+        min-height: auto;
+    }
+
+    /* Ẩn các item rỗng trên mobile */
+    .home-timeline-item-left:empty,
+    .home-timeline-item-right:empty {
+        display: none;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .home-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0;
+    }
+
+    .cta-section {
+        margin: 2rem 1.5rem;
+        padding: 3rem 1.5rem;
+    }
+
+    .cta-title {
+        font-size: 1.75rem;
+    }
+
+    .cta-description {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+
+    .hero-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .timeline-section {
+        padding: 2rem 0;
+    }
+
+    .timeline-section-header {
+        padding: 0 1rem 1rem 1rem;
+    }
+
+    .timeline-section-header .section-title {
+        font-size: 1.75rem;
+    }
+
+    .home-timeline-container {
+        padding: 1.5rem 0.5rem;
+    }
+
+    .timeline-view-all-container {
+        padding: 1.5rem 1rem 0.5rem 1rem;
+    }
+
+    .timeline-view-all-btn {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+    }
+
+    .home-timeline-item-container {
+        margin-bottom: 1.5rem;
+        padding-left: 2rem;
+    }
+
+    .home-timeline-line {
+        left: 15px;
+        width: 3px;
+    }
+
+    .home-timeline-marker {
+        left: 8px;
+        width: 16px;
+        height: 16px;
+        border-width: 3px;
+    }
+
+    .section-title {
+        font-size: 1.375rem;
+    }
+
+    .cta-title {
+        font-size: 1.5rem;
+    }
+
+    .cta-button {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
     }
 }

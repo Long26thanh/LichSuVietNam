@@ -49,11 +49,12 @@
     border: 1px solid #e2e8f0;
 }
 
-.filters {
+.user-management .filters {
     display: flex;
     gap: 12px;
     align-items: center;
     flex-wrap: wrap;
+    max-width: 1200px;
 }
 
 .filters input,
@@ -99,27 +100,34 @@
 
 .users-table th,
 .users-table td {
-    padding: 16px 20px;
-    border-bottom: 1px solid #f1f5f9;
-    text-align: left;
+    padding: 16px 12px;
     vertical-align: middle;
 }
 
-.users-table td:last-child {
-    height: 100%;
-    vertical-align: middle;
+/* Căn trái cho một số cột cụ thể */
+.users-table td:nth-child(1),
+.users-table td:nth-child(2) {
+    text-align: left;
+}
+
+/* Căn giữa cho vai trò, trạng thái và ngày tạo */
+.users-table td:nth-child(3),
+.users-table td:nth-child(4),
+.users-table td:nth-child(5) {
+    text-align: center;
+}
+
+.users-table td {
+    border-bottom: 1px solid #dee2e6;
 }
 
 .users-table thead th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #f8f9fa;
     font-weight: 600;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+    text-align: center;
 }
 
 .users-table tbody tr {

@@ -1,44 +1,25 @@
 /* Timeline Header Styling */
-.timeline-heade {
+.timeline-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 4rem 2rem;
+    padding: 4rem 2rem 2rem 2rem;
     text-align: center;
     color: white;
     position: relative;
     overflow: hidden;
 }
 
-.timeline-heade::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    opacity: 0.3;
-}
-
 .timeline-title {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     font-weight: 800;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 1;
-    letter-spacing: -0.02em;
 }
 
 .timeline-description {
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: rgba(255, 255, 255, 0.9);
     max-width: 600px;
     margin: 0 auto;
-    line-height: 1.6;
-    position: relative;
-    z-index: 1;
-    font-weight: 300;
 }
 
 /* Main Timeline Container */
@@ -233,24 +214,24 @@
     .timeline-heade {
         padding: 3rem 1.5rem;
     }
-    
+
     .timeline-title {
         font-size: 2.5rem;
     }
-    
+
     .timeline-description {
         font-size: 1.1rem;
     }
-    
+
     .timeline-container {
         padding: 2rem 1rem;
     }
-    
+
     .timeline-line {
         left: 2rem;
         transform: none;
     }
-    
+
     .timeline-item-container {
         flex-direction: column;
         align-items: flex-start;
@@ -258,7 +239,7 @@
         margin: 2rem 0; /* Giảm margin trên mobile */
         min-height: 150px; /* Giảm min-height trên mobile */
     }
-    
+
     .timeline-item-left,
     .timeline-item-right {
         width: 100%;
@@ -266,17 +247,17 @@
         text-align: left;
         margin-left: 3rem;
     }
-    
+
     .timeline-marker {
         left: 2rem;
         transform: translate(-50%, -50%);
     }
-    
+
     .search-results-info {
         font-size: 0.8rem;
         padding: 0.4rem 0.8rem;
     }
-    
+
     .search-results-info .count {
         padding: 0.2rem 0.4rem;
     }
@@ -286,28 +267,28 @@
     .timeline-heade {
         padding: 2rem 1rem;
     }
-    
+
     .timeline-title {
         font-size: 2rem;
     }
-    
+
     .timeline-description {
         font-size: 1rem;
     }
-    
+
     .timeline-container {
         padding: 1.5rem 0.5rem;
     }
-    
+
     .timeline-line {
         left: 1.5rem;
     }
-    
+
     .timeline-item-left,
     .timeline-item-right {
         margin-left: 2rem;
     }
-    
+
     .timeline-marker {
         left: 1.5rem;
     }

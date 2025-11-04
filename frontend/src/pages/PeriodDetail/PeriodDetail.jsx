@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { periodService } from "@/services";
+import { previewService, periodService } from "@/services";
+import { recordWebsiteView, recordPeriodView } from "@/services/viewService";
 import "./PeriodDetail.css";
-import { TextEditor } from "@/components";
+import { TextEditor, CommentSection } from "@/components";
 
 const PeriodDetail = ({ isPreview = false }) => {
     const { id } = useParams();
@@ -17,7 +18,7 @@ const PeriodDetail = ({ isPreview = false }) => {
                 setLoading(true);
                 // Sử dụng API khác nhau cho preview và xem thường
                 const response = isPreview
-                    ? await periodService.previewPeriod(id)
+                    ? await previewService.previewPeriod(id)
                     : await periodService.getPeriodById(id);
 
                 if (!response.success) {
@@ -49,6 +50,14 @@ const PeriodDetail = ({ isPreview = false }) => {
             fetchPeriod();
         }
     }, [id, isPreview]);
+
+    // Ghi nhận lượt xem (chỉ khi không phải preview)
+    useEffect(() => {
+        if (period && period.id && !isPreview) {
+            recordWebsiteView();
+            recordPeriodView(period.id);
+        }
+    }, [period, isPreview]);
 
     const formatYear = (year) => {
         return year < 0 ? `${Math.abs(year)} TCN` : `${year} SCN`;
@@ -130,7 +139,7 @@ const PeriodDetail = ({ isPreview = false }) => {
                 )}
             </div>
 
-            <div className="period-metadata-card">
+            {/* <div className="period-metadata-card">
                 <h3 className="metadata-title">Thông tin</h3>
                 <ul className="metadata-list">
                     {period.start_year && (
@@ -155,7 +164,12 @@ const PeriodDetail = ({ isPreview = false }) => {
                         </li>
                     )}
                 </ul>
-            </div>
+            </div> */}
+
+            {/* Comment Section - Chỉ hiển thị khi không phải preview */}
+            {!isPreview && (
+                <CommentSection pageType="Thời kỳ" pageId={period.id} />
+            )}
         </div>
     );
 };

@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import routes from "@/config/routes";
+import { formatShortDateRange } from "@/utils/dateUtils";
+import { formatViewCount } from "@/utils/viewUtils";
 import styles from "./FigureCard.module.css";
 
-const FigureCard = ({ figure }) => {
+const FigureCard = ({ figure, viewCount = 0, commentCount = 0 }) => {
     const navigate = useNavigate();
 
     const handleCardClick = () => {
@@ -11,22 +13,19 @@ const FigureCard = ({ figure }) => {
         });
     };
 
-    const formatYear = (year) => {
-        if (!year) return "N/A";
-        return year < 0 ? `${Math.abs(year)} TCN` : `${year} SCN`;
-    };
-
     const formatLifespan = () => {
-        if (figure.birth_year && figure.death_year) {
-            return `${formatYear(figure.birth_year)} - ${formatYear(
-                figure.death_year
-            )}`;
-        } else if (figure.birth_year) {
-            return `Sinh: ${formatYear(figure.birth_year)}`;
-        } else if (figure.death_year) {
-            return `Mất: ${formatYear(figure.death_year)}`;
-        }
-        return "N/A";
+        return formatShortDateRange(
+            {
+                day: figure.birth_date,
+                month: figure.birth_month,
+                year: figure.birth_year,
+            },
+            {
+                day: figure.death_date,
+                month: figure.death_month,
+                year: figure.death_year,
+            }
+        );
     };
 
     return (
@@ -82,6 +81,37 @@ const FigureCard = ({ figure }) => {
             </div>
 
             <div className={styles["figure-card-footer"]}>
+                <div className={styles["figure-stats"]}>
+                    {viewCount >= 0 && (
+                        <div className={styles["figure-views"]}>
+                            <svg
+                                className={styles["view-icon"]}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <span>{formatViewCount(viewCount)}</span>
+                        </div>
+                    )}
+                    {commentCount >= 0 && (
+                        <div className={styles["figure-comments"]}>
+                            <svg
+                                className={styles["comment-icon"]}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                            <span>{commentCount}</span>
+                        </div>
+                    )}
+                </div>
                 <button className={styles["view-details-btn"]}>
                     Xem chi tiết
                 </button>

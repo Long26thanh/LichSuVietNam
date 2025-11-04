@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import figureService from "@/services/figureService";
 import locationService from "@/services/locationService";
+import { recordWebsiteView, recordFigureView } from "@/services/viewService";
+import { formatDateRange } from "@/utils/dateUtils";
+import { CommentSection } from "@/components";
 import "./FigureDetail.css";
 
 const FigureDetail = () => {
@@ -61,24 +64,29 @@ const FigureDetail = () => {
         loadNames();
     }, [item]);
 
+    // Ghi nhận lượt xem
+    useEffect(() => {
+        if (item && item.id) {
+            recordWebsiteView();
+            recordFigureView(item.id);
+        }
+    }, [item]);
+
     const handleBack = () => nav(-1);
 
-    const formatYear = (year) => {
-        if (!year) return "N/A";
-        return year < 0 ? `${Math.abs(year)} TCN` : `${year} SCN`;
-    };
-
     const formatLifespan = () => {
-        if (item.birth_year && item.death_year) {
-            return `${formatYear(item.birth_year)} - ${formatYear(
-                item.death_year
-            )}`;
-        } else if (item.birth_year) {
-            return `Sinh: ${formatYear(item.birth_year)}`;
-        } else if (item.death_year) {
-            return `Mất: ${formatYear(item.death_year)}`;
-        }
-        return "N/A";
+        return formatDateRange(
+            {
+                day: item.birth_date,
+                month: item.birth_month,
+                year: item.birth_year,
+            },
+            {
+                day: item.death_date,
+                month: item.death_month,
+                year: item.death_year,
+            }
+        );
     };
 
     if (loading) return <div className="fig-detail-page">Đang tải...</div>;
@@ -137,6 +145,9 @@ const FigureDetail = () => {
                     </section>
                 )}
             </main>
+
+            {/* Comment Section */}
+            <CommentSection pageType="Nhân vật" pageId={item.id} />
         </div>
     );
 };

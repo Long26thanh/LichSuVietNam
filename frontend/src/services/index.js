@@ -5,3 +5,7 @@ export { default as locationService } from "./locationService";
 export { default as figureService } from "./figureService";
 export { default as eventService } from "./eventService";
 export { default as previewService } from "./previewService";
+export { default as articleService } from "./articleService";
+export { default as uploadService } from "./uploadService";
+export { default as commentService } from "./commentService";
+export { default as statsService } from "./statsService";

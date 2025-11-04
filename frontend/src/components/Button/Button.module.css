@@ -26,7 +26,7 @@
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.25;
     text-decoration: none;
     border: 2px solid transparent;
@@ -441,4 +441,31 @@
     .btnSearch .searchInput:focus {
         width: 180px;
     }
+}
+
+/* Form specific button variants */
+.btnSubmit {
+    background-color: #6366f1 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.btnSubmit:hover {
+    background-color: #4f46e5 !important;
+}
+
+.btnSubmit:disabled {
+    background-color: #a5a6f6 !important;
+    cursor: not-allowed;
+}
+
+.btnCancel {
+    background-color: white !important;
+    color: #4b5563 !important;
+    border: 1px solid #d1d5db !important;
+}
+
+.btnCancel:hover {
+    background-color: #f3f4f6 !important;
+    border-color: #9ca3af !important;
 }

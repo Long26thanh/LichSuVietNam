@@ -34,7 +34,7 @@ const testConnection = async () => {
 
 // Xử lý kết nối
 pool.on("connect", () => {
-    console.log("Kết nối đến cơ sở dữ liệu thành công");
+    // console.log("Kết nối đến cơ sở dữ liệu thành công");
 });
 
 pool.on("error", (err) => {
@@ -48,11 +48,11 @@ const query = async (text, params) => {
     try {
         const result = await pool.query(text, params);
         const duration = Date.now() - start;
-        console.log("Truy vấn thành công:", {
-            text,
-            duration,
-            rows: result.rowCount,
-        });
+        // console.log("Truy vấn thành công:", {
+        //     text,
+        //     duration,
+        //     rows: result.rowCount,
+        // });
         return result;
     } catch (err) {
         console.error("Lỗi truy vấn:", err);
@@ -75,7 +75,6 @@ const getClient = async () => {
 const closePool = async () => {
     try {
         await pool.end();
-        console.log("Pool kết nối đã được đóng");
     } catch (err) {
         console.error("Lỗi đóng pool:", err);
     }

@@ -57,26 +57,11 @@ export const login = async (req, res) => {
     }
 };
 
+// [Post] /auth/logout - Đăng xuất (không yêu cầu token hợp lệ)
 export const logout = async (req, res) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                success: false,
-                message: "Token không hợp lệ",
-            });
-        }
-        const token = authHeader.split(" ")[1];
-        const { jwtSecret } = getServerConfig();
-        const decoded = jwt.verify(token, jwtSecret);
-
-        if (!decoded || !decoded.userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Token không hợp lệ",
-            });
-        }
-        // Ở đây ta không cần lưu trạng thái token đã bị thu hồi vì ta không sử dụng refresh token
+        // Logout luôn thành công, không cần verify token
+        // Vì mục đích là xóa session ở client, dù token hết hạn hay không
         return res.json({
             success: true,
             message: "Đăng xuất thành công",

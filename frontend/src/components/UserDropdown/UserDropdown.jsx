@@ -194,7 +194,31 @@ const UserDropdown = ({
                                     >
                                         {item.icon && (
                                             <span className="item-icon">
-                                                {item.icon}
+                                                {typeof item.icon ===
+                                                "string" ? (
+                                                    // Kiểm tra xem có phải URL không
+                                                    item.icon.startsWith(
+                                                        "http"
+                                                    ) ||
+                                                    item.icon.startsWith(
+                                                        "data:"
+                                                    ) ||
+                                                    item.icon.startsWith("/") ||
+                                                    item.icon.startsWith(
+                                                        "."
+                                                    ) ? (
+                                                        <img
+                                                            src={item.icon}
+                                                            alt=""
+                                                        />
+                                                    ) : (
+                                                        // Render text/emoji trực tiếp
+                                                        item.icon
+                                                    )
+                                                ) : (
+                                                    // Render React element
+                                                    item.icon
+                                                )}
                                             </span>
                                         )}
                                         <span className="item-text">

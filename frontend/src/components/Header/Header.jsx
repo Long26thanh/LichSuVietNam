@@ -85,12 +85,7 @@ function Header() {
                     ]}
                 />
                 <div className={styles["header-actions"]}>
-                    <Search
-                        toggleAble={true}
-                        onSearch={(query) =>
-                            console.log("Searching for:", query)
-                        }
-                    />
+                    <Search toggleAble={true} onSearch={(query) => {}} />
                     {!isAuthenticated ? (
                         <div className={styles["auth-buttons"]}>
                             <Button
@@ -122,6 +117,12 @@ function Header() {
                                     icon: icons.user,
                                     label: "Hồ sơ cá nhân",
                                     to: "/profile",
+                                },
+                                {
+                                    key: "my-articles",
+                                    icon: icons.myArticles,
+                                    label: "Bài viết của tôi",
+                                    to: config.routes.userArticles,
                                 },
                                 {
                                     key: "settings",

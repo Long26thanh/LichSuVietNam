@@ -2,6 +2,7 @@ const routes = {
     notFound: "*",
     home: "/",
     news: "/news",
+    articleDetail: "/news/:id",
     timeline: "/timeline",
     periodDetail: "/timeline/:id",
     characters: "/characters",
@@ -13,6 +14,7 @@ const routes = {
     register: "/register",
     login: "/login",
     profile: "/profile",
+    userArticles: "/my-articles",
     admin: "/admin",
     adminLogin: "/admin/login",
     adminDashboard: "/admin/dashboard",
@@ -21,8 +23,13 @@ const routes = {
     adminFigures: "/admin/figures",
     adminLocations: "/admin/locations",
     adminPeriods: "/admin/periods",
+    adminArticles: "/admin/articles",
     adminProfile: "/admin/profile",
     periodPreview: "/admin/preview/periods/:id",
+    locationPreview: "/admin/preview/locations/:id",
+    figurePreview: "/admin/preview/figures/:id",
+    eventPreview: "/admin/preview/events/:id",
+    articlePreview: "/admin/preview/articles/:id",
 };
 
 export default routes;

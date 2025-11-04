@@ -1,5 +1,5 @@
-.admin-events {
-    max-width: 1200px;
+.events-management {
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -20,23 +20,253 @@
     font-size: 1rem;
 }
 
+/* Toolbar */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.filters {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    min-width: 300px;
+}
+
+.filters input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.filters input:focus {
+    outline: none;
+    border-color: #0066cc;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Page Content */
 .page-content {
     background: white;
     border-radius: 12px;
-    padding: 40px;
+    padding: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border: 1px solid #e9ecef;
+    overflow: hidden;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+/* Table Styles */
+.events-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.events-table th {
+    background: #f8f9fa;
+    padding: 16px 12px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.events-table th:nth-child(2),
+.events-table th:nth-child(3),
+.events-table th:nth-child(4),
+.events-table th:nth-child(5) {
     text-align: center;
 }
 
-.coming-soon h2 {
-    margin: 0 0 15px 0;
-    font-size: 1.5rem;
-    color: #666;
+.events-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
 }
 
-.coming-soon p {
-    margin: 0;
-    color: #999;
-    font-size: 1rem;
+.events-table td.center-content {
+    text-align: center;
+}
+
+.events-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.events-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Event Info */
+.event-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.event-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+/* Row Actions */
+.row-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+/* Loading & Error States */
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    font-size: 16px;
+}
+
+.error-box {
+    padding: 16px;
+    margin: 16px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    color: #721c24;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 16px 0;
+}
+
+.page-info {
+    color: #666;
+    font-size: 14px;
+}
+
+.page-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.page-controls button {
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.page-controls button:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+.page-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-controls select {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    max-width: 1000px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .events-table {
+        font-size: 13px;
+    }
+
+    .events-table th,
+    .events-table td {
+        padding: 12px 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filters {
+        min-width: 100%;
+    }
+
+    .actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .events-table {
+        font-size: 12px;
+    }
+
+    .events-table th,
+    .events-table td {
+        padding: 10px 6px;
+    }
+
+    .row-actions {
+        flex-direction: column;
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: 12px;
+    }
 }

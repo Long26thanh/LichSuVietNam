@@ -14,6 +14,10 @@ const TextEditor = ({
     const [isActive, setIsActive] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(true);
+    const [showVideoDialog, setShowVideoDialog] = useState(false);
+    const [showVideoUrlInput, setShowVideoUrlInput] = useState(false);
+    const [videoUrl, setVideoUrl] = useState("");
+    const [videoError, setVideoError] = useState("");
 
     useEffect(() => {
         if (editorRef.current && value !== editorRef.current.innerHTML) {
@@ -191,6 +195,183 @@ const TextEditor = ({
         input.click();
     };
 
+    const insertVideoFromUrl = (url) => {
+        try {
+            let embedCode = "";
+
+            // YouTube
+            if (url.includes("youtube.com") || url.includes("youtu.be")) {
+                let videoId = "";
+                if (url.includes("youtu.be/")) {
+                    videoId = url.split("youtu.be/")[1].split("?")[0];
+                } else if (url.includes("youtube.com/watch?v=")) {
+                    videoId = url.split("v=")[1].split("&")[0];
+                } else if (url.includes("youtube.com/embed/")) {
+                    videoId = url.split("embed/")[1].split("?")[0];
+                }
+
+                if (videoId) {
+                    embedCode = `<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 10px 0;">
+                        <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+                            src="https://www.youtube.com/embed/${videoId}" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>`;
+                }
+            }
+            // Vimeo
+            else if (url.includes("vimeo.com")) {
+                const videoId = url.split("vimeo.com/")[1].split("?")[0];
+                if (videoId) {
+                    embedCode = `<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 10px 0;">
+                        <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+                            src="https://player.vimeo.com/video/${videoId}" 
+                            frameborder="0" 
+                            allow="autoplay; fullscreen; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>`;
+                }
+            }
+            // Direct video URL
+            else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+                embedCode = `<video controls style="max-width: 100%; margin: 10px 0;">
+                    <source src="${url}" type="video/${url.split(".").pop()}">
+                    Trình duyệt của bạn không hỗ trợ thẻ video.
+                </video>`;
+            }
+            // Generic iframe for other embeds
+            else {
+                embedCode = `<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 10px 0;">
+                    <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+                        src="${url}" 
+                        frameborder="0" 
+                        allowfullscreen>
+                    </iframe>
+                </div>`;
+            }
+
+            if (embedCode) {
+                const savedSel = saveSelection();
+                document.execCommand("insertHTML", false, embedCode);
+                handleInput();
+                if (savedSel) {
+                    setTimeout(() => {
+                        restoreSelection(savedSel);
+                    }, 0);
+                }
+                return true;
+            } else {
+                setVideoError(
+                    "Không thể nhận dạng định dạng video. Vui lòng thử lại với URL hợp lệ."
+                );
+                return false;
+            }
+        } catch (error) {
+            console.error("Error inserting video:", error);
+            setVideoError("Có lỗi xảy ra khi chèn video. Vui lòng thử lại.");
+            return false;
+        }
+    };
+
+    const handleVideoFileUpload = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "video/*";
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Kiểm tra kích thước file (giới hạn 100MB)
+                const maxSize = 100 * 1024 * 1024; // 100MB
+                if (file.size > maxSize) {
+                    setVideoError(
+                        "Video quá lớn! Vui lòng chọn video nhỏ hơn 100MB."
+                    );
+                    return;
+                }
+
+                try {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const videoUrl = e.target.result;
+                        const videoType = file.type;
+
+                        const embedCode = `<video controls style="max-width: 100%; margin: 10px 0;">
+                            <source src="${videoUrl}" type="${videoType}">
+                            Trình duyệt của bạn không hỗ trợ thẻ video.
+                        </video>`;
+
+                        const savedSel = saveSelection();
+                        document.execCommand("insertHTML", false, embedCode);
+                        handleInput();
+                        if (savedSel) {
+                            setTimeout(() => {
+                                restoreSelection(savedSel);
+                            }, 0);
+                        }
+
+                        // Đóng dialog
+                        setShowVideoDialog(false);
+                        setVideoError("");
+                    };
+                    reader.readAsDataURL(file);
+                } catch (error) {
+                    console.error("Error inserting video:", error);
+                    setVideoError(
+                        "Có lỗi xảy ra khi chèn video. Vui lòng thử lại."
+                    );
+                }
+            }
+        };
+        input.click();
+    };
+
+    const handleVideoUrlSubmit = () => {
+        if (!videoUrl.trim()) {
+            setVideoError("Vui lòng nhập URL video");
+            return;
+        }
+
+        const success = insertVideoFromUrl(videoUrl);
+        if (success) {
+            setShowVideoUrlInput(false);
+            setShowVideoDialog(false);
+            setVideoUrl("");
+            setVideoError("");
+        }
+    };
+
+    const handleVideoInsert = () => {
+        setShowVideoDialog(true);
+        setVideoError("");
+    };
+
+    const handlePaste = (e) => {
+        // Chặn dán ảnh nếu không phải type "rich"
+        if (type !== "rich") {
+            const items = e.clipboardData.items;
+
+            // Kiểm tra có file ảnh trong clipboard
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }
+
+            // Kiểm tra có img tag trong HTML clipboard
+            const html = e.clipboardData.getData("text/html");
+            if (html && html.includes("<img")) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+    };
+
     const handleLinkInsert = () => {
         const savedSel = saveSelection();
         if (!savedSel || savedSel.end === savedSel.start) {
@@ -311,6 +492,11 @@ const TextEditor = ({
 
                 if (command === "insertImage") {
                     handleImageInsert();
+                    return;
+                }
+
+                if (command === "insertVideo") {
+                    handleVideoInsert();
                     return;
                 }
 
@@ -556,6 +742,22 @@ const TextEditor = ({
                         />
                     </button>
                 )}
+                {/* Insert Video button */}
+                {/* {type === "rich" && (
+                    <button
+                        type="button"
+                        className={styles["toolbar-btn"]}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => execCommand("insertVideo")}
+                        title="Chèn video"
+                    >
+                        <img
+                            src={icons.videoIcon}
+                            alt="Chèn video"
+                            className={styles.buttonIcon}
+                        />
+                    </button>
+                )} */}
                 {type === "rich" && (
                     <button
                         type="button"
@@ -597,6 +799,7 @@ const TextEditor = ({
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 onClick={handleClick}
+                onPaste={handlePaste}
                 onKeyDown={(e) => {
                     // Cho phép ctrl/cmd + click để chỉnh sửa link
                     if (e.ctrlKey || e.metaKey) {
@@ -606,6 +809,119 @@ const TextEditor = ({
                 data-placeholder={placeholder}
                 suppressContentEditableWarning={true}
             />
+
+            {/* Video Dialog */}
+            {showVideoDialog && (
+                <div
+                    className={styles.modalOverlay}
+                    onClick={() => {
+                        setShowVideoDialog(false);
+                        setShowVideoUrlInput(false);
+                        setVideoUrl("");
+                        setVideoError("");
+                    }}
+                >
+                    <div
+                        className={styles.modalContent}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {!showVideoUrlInput ? (
+                            <>
+                                <h3 className={styles.modalTitle}>
+                                    Chèn video
+                                </h3>
+                                <p className={styles.modalDescription}>
+                                    Chọn cách chèn video vào bài viết
+                                </p>
+                                {videoError && (
+                                    <div className={styles.errorMessage}>
+                                        {videoError}
+                                    </div>
+                                )}
+                                <div className={styles.modalButtons}>
+                                    <button
+                                        type="button"
+                                        className={styles.modalButton}
+                                        onClick={handleVideoFileUpload}
+                                    >
+                                        📁 Tải video từ máy
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.modalButton}
+                                        onClick={() => {
+                                            setShowVideoUrlInput(true);
+                                            setVideoError("");
+                                        }}
+                                    >
+                                        🔗 Nhập link video
+                                    </button>
+                                </div>
+                                <button
+                                    type="button"
+                                    className={styles.modalCloseButton}
+                                    onClick={() => {
+                                        setShowVideoDialog(false);
+                                        setVideoError("");
+                                    }}
+                                >
+                                    Hủy
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className={styles.modalTitle}>
+                                    Nhập URL video
+                                </h3>
+                                <p className={styles.modalDescription}>
+                                    YouTube, Vimeo, hoặc link video trực tiếp
+                                </p>
+                                <input
+                                    type="text"
+                                    className={styles.modalInput}
+                                    placeholder="https://www.youtube.com/watch?v=..."
+                                    value={videoUrl}
+                                    onChange={(e) => {
+                                        setVideoUrl(e.target.value);
+                                        setVideoError("");
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            handleVideoUrlSubmit();
+                                        }
+                                    }}
+                                    autoFocus
+                                />
+                                {videoError && (
+                                    <div className={styles.errorMessage}>
+                                        {videoError}
+                                    </div>
+                                )}
+                                <div className={styles.modalButtons}>
+                                    <button
+                                        type="button"
+                                        className={styles.modalButton}
+                                        onClick={handleVideoUrlSubmit}
+                                    >
+                                        Chèn video
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.modalCloseButton}
+                                        onClick={() => {
+                                            setShowVideoUrlInput(false);
+                                            setVideoUrl("");
+                                            setVideoError("");
+                                        }}
+                                    >
+                                        Quay lại
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

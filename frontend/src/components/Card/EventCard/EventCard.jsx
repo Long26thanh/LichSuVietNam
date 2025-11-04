@@ -1,9 +1,10 @@
 import { useNavigate, Link } from "react-router-dom";
 import routes from "@/config/routes";
 import { formatShortDateRange } from "@/utils";
+import { formatViewCount } from "@/utils/viewUtils";
 import styles from "./EventCard.module.css";
 
-function EventCard({ event }) {
+function EventCard({ event, viewCount = 0, commentCount = 0 }) {
     const navigate = useNavigate();
 
     const handleCardClick = () => {
@@ -94,6 +95,37 @@ function EventCard({ event }) {
                 )}
             </div>
             <div className={styles["event-card-footer"]}>
+                <div className={styles["event-stats"]}>
+                    {viewCount >= 0 && (
+                        <div className={styles["event-views"]}>
+                            <svg
+                                className={styles["view-icon"]}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <span>{formatViewCount(viewCount)}</span>
+                        </div>
+                    )}
+                    {commentCount >= 0 && (
+                        <div className={styles["event-comments"]}>
+                            <svg
+                                className={styles["comment-icon"]}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                            <span>{commentCount}</span>
+                        </div>
+                    )}
+                </div>
                 <button className={styles["view-details-btn"]}>
                     Xem chi tiết
                 </button>

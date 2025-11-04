@@ -36,7 +36,7 @@ const AdminHeader = ({ user, onToggleSidebar, onLogout }) => {
     }, []);
 
     const handleNotificationClick = () => {
-        console.log("Notification clicked");
+        // Notification click handler (debug log removed)
     };
 
     return (

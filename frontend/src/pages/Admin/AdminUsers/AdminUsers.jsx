@@ -89,7 +89,6 @@ const AdminUsers = () => {
     };
 
     const openEdit = (user) => {
-        console.log("Editing user:", user);
         setEditingUser(user);
         setShowForm(true);
     };
@@ -107,7 +106,6 @@ const AdminUsers = () => {
                 is_active: payload.status === "active",
             };
             delete mapped.status;
-            console.log("Submitting user data:", mapped);
             if (editingUser) {
                 const id = editingUser.id || editingUser._id;
                 const res = await userService.updateUser(id, mapped);

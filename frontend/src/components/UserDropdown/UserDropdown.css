@@ -183,6 +183,7 @@
     position: relative;
 }
 
+/* Base user avatar style */
 .user-avatar {
     width: 45px;
     height: 45px;
@@ -198,28 +199,40 @@
     justify-content: center;
 }
 
-.user-avatar.default {
+/* User variant - green */
+.user-avatar.user {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
 }
 
+.user-avatar.user:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* Admin variant - purple */
 .user-avatar.admin {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
-.user-avatar:hover {
-    transform: scale(1.05);
-}
-
-.user-avatar.default:hover {
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-}
-
 .user-avatar.admin:hover {
+    transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+/* Default variant - same as user (green) */
+.user-avatar.default {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.user-avatar.default:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* Dropdown container */
 .user-dropdown {
     position: absolute;
     top: 100%;
@@ -234,10 +247,25 @@
     overflow: hidden;
 }
 
+/* Dropdown header base style */
 .dropdown-header {
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+}
+
+/* Header color cho user variant - green */
+.user-dropdown.user .dropdown-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* Header color cho admin variant - purple */
+.user-dropdown.admin .dropdown-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Header color cho default variant - green (same as user) */
+.user-dropdown.default .dropdown-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
 }
 
 .user-info-header {
@@ -325,7 +353,16 @@
 .item-icon {
     font-size: 1.1rem;
     width: 20px;
-    text-align: center;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.item-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .item-text {
@@ -351,7 +388,8 @@
 
 /* Animations */
 @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
         transform: scale(1);
     }
     50% {
@@ -364,7 +402,7 @@
     .notification-dropdown {
         width: 300px;
     }
-    
+
     .user-dropdown {
         min-width: 250px;
     }
@@ -376,12 +414,12 @@
         height: 40px;
         font-size: 1rem;
     }
-    
+
     .notification-dropdown {
         width: 280px;
         right: -50px;
     }
-    
+
     .user-dropdown {
         min-width: 220px;
         right: -20px;

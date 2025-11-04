@@ -9,6 +9,7 @@ export { default as dropdownArrow } from "./dropdown-arrow.svg";
 export { default as settings } from "./settings.svg";
 export { default as logout } from "./logout.svg";
 export { default as addUser } from "./add-user.svg";
+export { default as myArticles } from "./my-articles.svg";
 export { default as eraser } from "./eraser.svg";
 export { default as alignLeft } from "./align-left.svg";
 export { default as alignCenter } from "./align-center.svg";
@@ -17,6 +18,18 @@ export { default as alignRight } from "./align-right.svg";
 export { default as listBulleted } from "./list-ul.svg";
 export { default as listNumbered } from "./list-ol.svg";
 export { default as imageIcon } from "./image.svg";
+export { default as videoIcon } from "./video.svg";
 export { default as linkIcon } from "./link.svg";
 export { default as quoteIcon } from "./quote.svg";
 export { default as codeIcon } from "./code.svg";
+
+// Stats icons
+export { default as usersStat } from "./users-stat.svg";
+export { default as articlesStat } from "./articles-stat.svg";
+export { default as pendingStat } from "./pending-stat.svg";
+export { default as eventsStat } from "./events-stat.svg";
+export { default as figuresStat } from "./figures-stat.svg";
+export { default as locationsStat } from "./locations-stat.svg";
+export { default as periodsStat } from "./periods-stat.svg";
+export { default as visitsStat } from "./visits-stat.svg";
+export { default as commentsStat } from "./comments-stat.svg";

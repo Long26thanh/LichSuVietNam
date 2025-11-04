@@ -97,26 +97,28 @@ const PeriodForm = ({
 
     return (
         <form className={styles.form} onSubmit={handleSubmit}>
-            {title && <h2 className={styles.title}>{title}</h2>}
+            {title && <h2 className={styles.formTitle}>{title}</h2>}
 
-            <div className={styles.formGroup}>
-                <label htmlFor="name">Tên thời kỳ</label>
-                <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={values.name}
-                    onChange={handleChange}
-                    placeholder="Nhập tên thời kỳ"
-                />
-                {errors.name && (
-                    <span className={styles.error}>{errors.name}</span>
-                )}
+            <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                    <label htmlFor="name">Tên thời kỳ *</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={values.name}
+                        onChange={handleChange}
+                        placeholder="Nhập tên thời kỳ"
+                    />
+                    {errors.name && (
+                        <span className={styles.errorText}>{errors.name}</span>
+                    )}
+                </div>
             </div>
 
             <div className={styles.yearInputs}>
                 <div className={styles.formGroup}>
-                    <label htmlFor="start_year">Năm bắt đầu</label>
+                    <label htmlFor="start_year">Năm bắt đầu *</label>
                     <input
                         type="number"
                         id="start_year"
@@ -126,14 +128,14 @@ const PeriodForm = ({
                         placeholder="Nhập năm bắt đầu"
                     />
                     {errors.start_year && (
-                        <span className={styles.error}>
+                        <span className={styles.errorText}>
                             {errors.start_year}
                         </span>
                     )}
                 </div>
 
                 <div className={styles.formGroup}>
-                    <label htmlFor="end_year">Năm kết thúc</label>
+                    <label htmlFor="end_year">Năm kết thúc *</label>
                     <input
                         type="number"
                         id="end_year"
@@ -143,7 +145,9 @@ const PeriodForm = ({
                         placeholder="Nhập năm kết thúc"
                     />
                     {errors.end_year && (
-                        <span className={styles.error}>{errors.end_year}</span>
+                        <span className={styles.errorText}>
+                            {errors.end_year}
+                        </span>
                     )}
                 </div>
             </div>
@@ -176,13 +180,13 @@ const PeriodForm = ({
             <div className={styles.actions}>
                 <Button
                     type="button"
-                    variant="outline"
+                    variant="cancel"
                     onClick={onCancel}
                     disabled={loading}
                 >
                     Hủy
                 </Button>
-                <Button type="submit" loading={loading}>
+                <Button type="submit" variant="submit" loading={loading}>
                     {isEdit ? "Cập nhật" : "Thêm mới"}
                 </Button>
             </div>

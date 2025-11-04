@@ -8,6 +8,24 @@ const apiClient = axios.create({
     timeout: 10000,
 });
 
+apiClient.interceptors.request.use(
+    (config) => {
+        let token = null;
+        if (localStorage.getItem("session_type") === "admin") {
+            token = localStorage.getItem("admin_auth_token");
+        } else {
+            token = localStorage.getItem("auth_token");
+        }
+        if (token) {
+            config.headers["Authorization"] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 class EventService {
     async getAllEvents({ page = 1, limit = 12, search = "", signal } = {}) {
         const params = {};
@@ -22,8 +40,21 @@ class EventService {
         const response = await apiClient.get(`/${id}`);
         return response.data;
     }
+
+    async createEvent(eventData) {
+        const response = await apiClient.post("/", eventData);
+        return response.data;
+    }
+
+    async updateEvent(id, eventData) {
+        const response = await apiClient.put(`/${id}`, eventData);
+        return response.data;
+    }
+
+    async deleteEvent(id) {
+        const response = await apiClient.delete(`/${id}`);
+        return response.data;
+    }
 }
 
 export default new EventService();
-
-

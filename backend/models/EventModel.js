@@ -41,6 +41,13 @@ class Event {
             ? `WHERE ${conditions.join(" AND ")}`
             : "";
 
+        // Đếm tổng số bản ghi
+        const countResult = await query(
+            `SELECT COUNT(DISTINCT "SuKien"."MaSuKien") AS total FROM "SuKien" ${whereClause}`,
+            values.slice(0, index - 1)
+        );
+
+        // Lấy dữ liệu phân trang
         const result = await query(
             `SELECT "SuKien".*, 
             JSON_AGG(
@@ -57,7 +64,16 @@ class Event {
             LIMIT $${index} OFFSET $${index + 1}`,
             [...values, limit, offset]
         );
-        return result.rows.map((row) => new Event(row));
+
+        return {
+            data: result.rows.map((row) => new Event(row)),
+            pagination: {
+                total: parseInt(countResult.rows[0].total),
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(countResult.rows[0].total / limit),
+            },
+        };
     }
 
     static async getById(id) {
@@ -80,6 +96,113 @@ class Event {
         );
         const row = result.rows[0];
         return row ? new Event(row) : null;
+    }
+
+    static async create(eventData) {
+        const result = await query(
+            `INSERT INTO "SuKien"
+            ("TenSuKien", "NgayBatDau", "ThangBatDau", "NamBatDau", 
+            "NgayKetThuc", "ThangKetThuc", "NamKetThuc", "MoTa",
+            "TomTat", "MaDiaDanh", "MaThoiKy", "YNghia")
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            RETURNING *;`,
+            [
+                eventData.name,
+                eventData.start_date,
+                eventData.start_month,
+                eventData.start_year,
+                eventData.end_date,
+                eventData.end_month,
+                eventData.end_year,
+                eventData.description,
+                eventData.summary,
+                eventData.location_id,
+                eventData.period_id,
+                eventData.significance,
+            ]
+        );
+        const related_figures = eventData.related_figures || [];
+        for (const figureId of related_figures) {
+            await query(
+                `INSERT INTO "NhanVat_SuKien" ("MaNhanVat", "MaSuKien")
+                VALUES ($1, $2);`,
+                [figureId, result.rows[0].MaSuKien]
+            );
+        }
+        return new Event(result.rows[0]);
+    }
+
+    async update(eventData) {
+        const result = await query(
+            `UPDATE "SuKien"
+            SET "TenSuKien" = $1,
+                "NgayBatDau" = $2,
+                "ThangBatDau" = $3,
+                "NamBatDau" = $4,
+                "NgayKetThuc" = $5,
+                "ThangKetThuc" = $6,
+                "NamKetThuc" = $7,
+                "MoTa" = $8,
+                "TomTat" = $9,
+                "MaDiaDanh" = $10,
+                "MaThoiKy" = $11,
+                "YNghia" = $12,
+                "NgayCapNhat" = CURRENT_TIMESTAMP
+            WHERE "MaSuKien" = $13
+            RETURNING *;`,
+            [
+                eventData.name,
+                eventData.start_date,
+                eventData.start_month,
+                eventData.start_year,
+                eventData.end_date,
+                eventData.end_month,
+                eventData.end_year,
+                eventData.description,
+                eventData.summary,
+                eventData.location_id,
+                eventData.period_id,
+                eventData.significance,
+                this.id,
+            ]
+        );
+        // Cập nhật các nhân vật liên quan
+        if (eventData.related_figures) {
+            // Xóa các liên kết cũ
+            await query(`DELETE FROM "NhanVat_SuKien" WHERE "MaSuKien" = $1;`, [
+                this.id,
+            ]);
+            // Thêm các liên kết mới
+            for (const figureId of eventData.related_figures) {
+                await query(
+                    `INSERT INTO "NhanVat_SuKien" ("MaNhanVat", "MaSuKien")
+                    VALUES ($1, $2);`,
+                    [figureId, this.id]
+                );
+            }
+        }
+        return new Event(result.rows[0]);
+    }
+
+    async delete() {
+        await query(`DELETE FROM "NhanVat_SuKien" WHERE "MaSuKien" = $1;`, [
+            this.id,
+        ]);
+        await query(`DELETE FROM "SuKien" WHERE "MaSuKien" = $1;`, [this.id]);
+        return true;
+    }
+
+    // Thống kê methods
+    static async count() {
+        try {
+            const result = await query(
+                `SELECT COUNT(*) as count FROM "SuKien"`
+            );
+            return parseInt(result.rows[0].count, 10);
+        } catch (error) {
+            console.error("Error counting events:", error);
+            throw error;
+        }
     }
 }
 

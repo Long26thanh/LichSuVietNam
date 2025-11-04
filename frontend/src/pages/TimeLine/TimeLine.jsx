@@ -3,6 +3,7 @@ import TimeLineCard from "@/components/Card/TimeLineCard/TimeLineCard";
 import Search from "@/components/Search/Search";
 import "./TimeLine.css";
 import { periodService } from "../../services";
+import { recordWebsiteView } from "@/services/viewService";
 import { use } from "react";
 
 function TimeLine() {
@@ -13,6 +14,11 @@ function TimeLine() {
     const [filteredPeriods, setFilteredPeriods] = useState([]);
     const [showResultsInfo, setShowResultsInfo] = useState(false);
     const timelineRef = useRef(null);
+
+    // Track website view
+    useEffect(() => {
+        recordWebsiteView();
+    }, []);
 
     // Lấy dữ liệu từ API khi component được mount
     useEffect(() => {
@@ -140,7 +146,7 @@ function TimeLine() {
 
     return (
         <>
-            <div className="timeline-heade">
+            <div className="timeline-header">
                 <h1 className="timeline-title">
                     Dòng thời gian lịch sử Việt Nam
                 </h1>
@@ -190,6 +196,9 @@ function TimeLine() {
                                             <TimeLineCard
                                                 period={period}
                                                 isLeft={true}
+                                                commentCount={
+                                                    period.commentCount || 0
+                                                }
                                             />
                                         </div>
                                         <div className="timeline-marker"></div>
@@ -203,6 +212,9 @@ function TimeLine() {
                                             <TimeLineCard
                                                 period={period}
                                                 isLeft={false}
+                                                commentCount={
+                                                    period.commentCount || 0
+                                                }
                                             />
                                         </div>
                                     </>

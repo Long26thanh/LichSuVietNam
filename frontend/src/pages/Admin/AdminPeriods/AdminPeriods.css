@@ -120,7 +120,7 @@
 .periods-table th {
     background: #f8f9fa;
     padding: 16px 12px;
-    text-align: left;
+    text-align: center;
     font-weight: 600;
     color: #495057;
     border-bottom: 2px solid #dee2e6;
@@ -131,6 +131,12 @@
     padding: 16px 12px;
     border-bottom: 1px solid #dee2e6;
     vertical-align: middle;
+}
+
+/* Căn giữa cho cột thời gian và ngày tạo */
+.periods-table td:nth-child(2),
+.periods-table td:nth-child(4) {
+    text-align: center;
 }
 
 .periods-table tbody tr:hover {

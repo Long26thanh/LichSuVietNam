@@ -55,18 +55,6 @@ class PeriodService {
         const response = await apiClient.delete(`/${id}`);
         return response.data;
     }
-
-    // Xem trước thời kỳ (chỉ dành cho admin)
-    async previewPeriod(id) {
-        const response = await apiClient.get(`/preview/${id}`);
-        return response.data;
-    }
-
-    // Xóa thời kỳ
-    async deletePeriod(id) {
-        const response = await apiClient.delete(`/${id}`);
-        return response.data;
-    }
 }
 
 export default new PeriodService();
