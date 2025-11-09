@@ -4,6 +4,7 @@ import eventService from "@/services/eventService";
 import locationService from "@/services/locationService";
 import periodService from "@/services/periodService";
 import { recordWebsiteView, recordEventView } from "@/services/viewService";
+import { convertImagesToAbsoluteUrls } from "@/utils";
 import routes from "@/config/routes";
 import { formatDateRange } from "@/utils";
 import { CommentSection } from "@/components";
@@ -20,13 +21,17 @@ const EventDetail = () => {
     const [periodName, setPeriodName] = useState(null);
 
     useEffect(() => {
-        if (item) return;
+        // Luôn fetch dữ liệu mới khi id thay đổi hoặc component mount
+        // State chỉ dùng để hiển thị tạm thời, nhưng vẫn cập nhật từ server
         const fetchDetail = async () => {
             try {
-                setLoading(true);
+                // Chỉ hiển thị loading nếu chưa có dữ liệu tạm từ state
+                if (!item) setLoading(true);
+                
                 const res = await eventService.getEventById(id);
                 if (res?.success && res.data) {
                     setItem(res.data);
+                    setError(null);
                 } else {
                     setError("Không tìm thấy sự kiện");
                 }
@@ -162,25 +167,30 @@ const EventDetail = () => {
                 {item.summary && (
                     <section className="event-section">
                         <h2 className="section-title">Tóm tắt</h2>
-                        <div className="section-content">{item.summary}</div>
+                        <div 
+                            className="section-content"
+                            dangerouslySetInnerHTML={{ __html: convertImagesToAbsoluteUrls(item.summary) }}
+                        />
                     </section>
                 )}
 
                 {item.description && (
                     <section className="event-section">
                         <h2 className="section-title">Mô tả chi tiết</h2>
-                        <div className="section-content">
-                            {item.description}
-                        </div>
+                        <div 
+                            className="section-content"
+                            dangerouslySetInnerHTML={{ __html: convertImagesToAbsoluteUrls(item.description) }}
+                        />
                     </section>
                 )}
 
                 {item.significance && (
                     <section className="event-section">
                         <h2 className="section-title">Ý nghĩa lịch sử</h2>
-                        <div className="section-content">
-                            {item.significance}
-                        </div>
+                        <div 
+                            className="section-content"
+                            dangerouslySetInnerHTML={{ __html: convertImagesToAbsoluteUrls(item.significance) }}
+                        />
                     </section>
                 )}
 

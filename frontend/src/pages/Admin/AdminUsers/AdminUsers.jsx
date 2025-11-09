@@ -2,9 +2,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import userService from "@/services/userService";
 import { Button, UserForm, ConfirmDialog } from "@/components";
 import ResetPasswordModal from "@/components/ResetPasswordModal/ResetPasswordModal";
-import { addUser } from "@/assets/icons";
+import { addUser, usersGroup } from "@/assets/icons";
+import { getImageUrl } from "@/utils/imageUtils";
 import { useAuth } from "../../../contexts/AuthContext";
 import { validatePassword } from "@/utils";
+import "../AdminCommon.css";
 import "./AdminUsers.css";
 
 const defaultFilters = { q: "", role: "", status: "" };
@@ -203,9 +205,30 @@ const AdminUsers = () => {
 
     return (
         <div className="user-management">
-            <div className="page-header">
-                <h1>Quản lý người dùng</h1>
+            <div className="admin-page-header users">
+                <h1>
+                    <img src={usersGroup} alt="" className="header-icon" />
+                    Quản lý người dùng
+                </h1>
                 <p>Quản lý tài khoản người dùng trong hệ thống</p>
+                {/* <div className="header-stats">
+                    <div className="stat-item">
+                        <span className="stat-label">Tổng người dùng</span>
+                        <span className="stat-value">{total}</span>
+                    </div>
+                    <div className="stat-item">
+                        <span className="stat-label">Đang hoạt động</span>
+                        <span className="stat-value">
+                            {users.filter(u => u.status === 'active').length}
+                        </span>
+                    </div>
+                    <div className="stat-item">
+                        <span className="stat-label">Admin</span>
+                        <span className="stat-value">
+                            {users.filter(u => u.role === 'admin' || u.role === 'sa').length}
+                        </span>
+                    </div>
+                </div> */}
             </div>
 
             <div className="toolbar">
@@ -276,21 +299,17 @@ const AdminUsers = () => {
                                                 <div className="user-info">
                                                     <div className="user-avatar">
                                                         {u.avatar_url ? (
-                                                            <img
-                                                                src={
-                                                                    u.avatar_url
-                                                                }
-                                                                alt={
-                                                                    u.full_name
-                                                                }
-                                                            />
-                                                        ) : (
-                                                            <div className="user-avatar-placeholder">
-                                                                {u.full_name
-                                                                    .charAt(0)
-                                                                    .toUpperCase()}
-                                                            </div>
-                                                        )}
+                                                                <img
+                                                                    src={getImageUrl(u.avatar_url)}
+                                                                    alt={u.full_name}
+                                                                />
+                                                            ) : (
+                                                                <div className="user-avatar-placeholder">
+                                                                    {u.full_name
+                                                                        .charAt(0)
+                                                                        .toUpperCase()}
+                                                                </div>
+                                                            )}
                                                     </div>
                                                     <div className="user-details">
                                                         <div className="user-name">

@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { TextEditor, Button } from "@/components";
+import { TextEditor, Button, LocationMap } from "@/components";
 import { LocationTypeForm } from "@/components";
 import locationTypeService from "@/services/locationTypeService";
+import uploadService from "@/services/uploadService";
+import {
+    isBase64Image,
+    extractBase64Images,
+    replaceBase64WithUrls,
+} from "@/utils";
+import { mapPin, crosshair } from "@/assets/icons";
 import styles from "./LocationForm.module.css";
 
 const LocationForm = ({
@@ -14,16 +21,15 @@ const LocationForm = ({
     title,
 }) => {
     const [formData, setFormData] = useState({
-        name: "",
-        ancient_name: "",
-        modern_name: "",
-        description: "",
-        detail: "",
-        latitude: "",
-        longitude: "",
-        location_type: "",
+        name: initialData?.name || "",
+        ancient_name: initialData?.ancient_name || "",
+        modern_name: initialData?.modern_name || "",
+        description: initialData?.description || "",
+        detail: initialData?.detail || "",
+        latitude: initialData?.latitude || "",
+        longitude: initialData?.longitude || "",
+        location_type: initialData?.location_type_id || "",
         custom_type: "",
-        ...initialData,
     });
 
     const [errors, setErrors] = useState({});
@@ -43,7 +49,7 @@ const LocationForm = ({
                 detail: initialData.detail || "",
                 latitude: initialData.latitude || "",
                 longitude: initialData.longitude || "",
-                location_type: initialData.location_type || "",
+                location_type: initialData.location_type_id || "",
                 custom_type: "",
             });
         }
@@ -154,8 +160,63 @@ const LocationForm = ({
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (validateForm()) {
-            onSubmit(formData);
+        if (!validateForm()) return;
+
+        try {
+            // Upload ảnh từ description và detail
+            let processedDescription = formData.description;
+            let processedDetail = formData.detail;
+
+            // Extract và upload ảnh từ description
+            const base64ImagesInDescription = extractBase64Images(formData.description);
+            if (base64ImagesInDescription.length > 0) {
+                const replacementMap = {};
+                for (const base64Image of base64ImagesInDescription) {
+                    try {
+                        const uploadResponse = await uploadService.uploadImage(
+                            base64Image,
+                            "locations"
+                        );
+                        if (uploadResponse.success) {
+                            replacementMap[base64Image] = uploadResponse.data.url;
+                        }
+                    } catch (imgError) {
+                        console.error("Failed to upload description image:", imgError);
+                    }
+                }
+                processedDescription = replaceBase64WithUrls(formData.description, replacementMap);
+            }
+
+            // Extract và upload ảnh từ detail
+            const base64ImagesInDetail = extractBase64Images(formData.detail);
+            if (base64ImagesInDetail.length > 0) {
+                const replacementMap = {};
+                for (const base64Image of base64ImagesInDetail) {
+                    try {
+                        const uploadResponse = await uploadService.uploadImage(
+                            base64Image,
+                            "locations"
+                        );
+                        if (uploadResponse.success) {
+                            replacementMap[base64Image] = uploadResponse.data.url;
+                        }
+                    } catch (imgError) {
+                        console.error("Failed to upload detail image:", imgError);
+                    }
+                }
+                processedDetail = replaceBase64WithUrls(formData.detail, replacementMap);
+            }
+
+            const processedData = {
+                ...formData,
+                description: processedDescription,
+                detail: processedDetail,
+            };
+
+            onSubmit(processedData);
+        } catch (error) {
+            console.error("Error processing form:", error);
+            alert("Có lỗi xảy ra khi xử lý form");
         }
     };
 
@@ -234,7 +295,7 @@ const LocationForm = ({
                             </option>
                             {!isLoadingTypes && locationTypes.length > 0 ? (
                                 locationTypes.map((type) => (
-                                    <option key={type.id} value={type.name}>
+                                    <option key={type.id} value={type.id}>
                                         {type.name}
                                     </option>
                                 ))
@@ -303,6 +364,9 @@ const LocationForm = ({
                             {errors.latitude}
                         </span>
                     )}
+                    <small className={styles.helpText}>
+                        Vĩ độ từ -90 đến 90. Việt Nam: khoảng 8° đến 24°
+                    </small>
                 </div>
 
                 <div className={styles.formGroup}>
@@ -321,13 +385,48 @@ const LocationForm = ({
                             {errors.longitude}
                         </span>
                     )}
+                    <small className={styles.helpText}>
+                        Kinh độ từ -180 đến 180. Việt Nam: khoảng 102° đến 110°
+                    </small>
                 </div>
+            </div>
+
+            {/* Map Preview */}
+            <div className={styles.mapPreviewSection}>
+                <h3>
+                    <img src={mapPin} alt="" className={styles.sectionIcon} />
+                    Chọn vị trí (click trên bản đồ hoặc nhập tay)
+                </h3>
+                <p className={styles.helpText}>
+                    <img src={crosshair} alt="" className={styles.inlineIcon} />
+                    Bạn có thể click lên bản đồ để chọn tọa độ hoặc kéo marker. Hoặc nhập tay vĩ/kinh độ vào ô phía trên.
+                </p>
+                <LocationMap
+                    latitude={formData.latitude}
+                    longitude={formData.longitude}
+                    initialPosition={
+                        formData.latitude && formData.longitude
+                            ? [formData.latitude, formData.longitude]
+                            : null
+                    }
+                    name={formData.name || "Vị trí địa danh"}
+                    description={formData.description}
+                    interactive={true}
+                    onLocationSelect={({ latitude, longitude }) => {
+                        // store as string with 6 decimals
+                        setFormData((prev) => ({
+                            ...prev,
+                            latitude: latitude !== null ? latitude.toFixed(6) : "",
+                            longitude: longitude !== null ? longitude.toFixed(6) : "",
+                        }));
+                    }}
+                />
             </div>
 
             <div className={styles.editorSection}>
                 <label>Mô tả</label>
                 <TextEditor
-                    content={formData.description}
+                    value={formData.description}
                     onChange={handleDescriptionChange}
                     placeholder="Nhập mô tả về địa danh..."
                 />
@@ -336,7 +435,8 @@ const LocationForm = ({
             <div className={styles.editorSection}>
                 <label>Chi tiết</label>
                 <TextEditor
-                    content={formData.detail}
+                    type="rich"
+                    value={formData.detail}
                     onChange={handleDetailChange}
                     placeholder="Nhập thông tin chi tiết về địa danh..."
                 />

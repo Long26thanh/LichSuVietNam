@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import config from "@/config";
+import { getImageUrl } from "@/utils/imageUtils";
 import "./UserDropdown.css";
 
 const UserDropdown = ({
@@ -73,7 +74,7 @@ const UserDropdown = ({
             {/* Notifications (only for admin variant) */}
             {showNotifications && (
                 <div className="notification-menu">
-                    <button
+                    {/* <button
                         className="notification-btn"
                         onClick={handleNotifications}
                     >
@@ -83,7 +84,7 @@ const UserDropdown = ({
                                 {unreadCount}
                             </span>
                         )}
-                    </button>
+                    </button> */}
 
                     {showNotificationDropdown && (
                         <div className="notification-dropdown">
@@ -101,14 +102,7 @@ const UserDropdown = ({
                                             notification.unread ? "unread" : ""
                                         }`}
                                     >
-                                        <div className="notification-icon">
-                                            {notification.type === "user" &&
-                                                "👤"}
-                                            {notification.type === "event" &&
-                                                "📅"}
-                                            {notification.type === "system" &&
-                                                "⚙️"}
-                                        </div>
+                                        
                                         <div className="notification-content">
                                             <h4>{notification.title}</h4>
                                             <p>{notification.message}</p>
@@ -138,10 +132,14 @@ const UserDropdown = ({
                     className={`user-avatar ${variant}`}
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    {user?.name?.charAt(0) ||
-                        user?.username?.charAt(0) ||
-                        user?.full_name?.charAt(0) ||
-                        "A"}
+                    {user?.avatar_url ? (
+                        <img src={getImageUrl(user.avatar_url)} alt={user?.full_name || user?.username || 'User'} />
+                    ) : (
+                        (user?.name?.charAt(0) ||
+                            user?.username?.charAt(0) ||
+                            user?.full_name?.charAt(0) ||
+                            "A")
+                    )}
                 </button>
 
                 {isOpen && (
@@ -149,10 +147,14 @@ const UserDropdown = ({
                         <div className="dropdown-header">
                             <div className="user-info-header">
                                 <div className="user-avatar-large">
-                                    {user?.name?.charAt(0) ||
-                                        user?.username?.charAt(0) ||
-                                        user?.full_name?.charAt(0) ||
-                                        "A"}
+                                    {user?.avatar_url ? (
+                                        <img src={getImageUrl(user.avatar_url)} alt={user?.full_name || user?.username || 'User'} />
+                                    ) : (
+                                        (user?.name?.charAt(0) ||
+                                            user?.username?.charAt(0) ||
+                                            user?.full_name?.charAt(0) ||
+                                            "A")
+                                    )}
                                 </div>
                                 <div className="user-details">
                                     <p className="user-name">

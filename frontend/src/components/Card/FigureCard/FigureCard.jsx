@@ -31,12 +31,14 @@ const FigureCard = ({ figure, viewCount = 0, commentCount = 0 }) => {
     return (
         <div className={styles["figure-card"]} onClick={handleCardClick}>
             <div className={styles["figure-card-header"]}>
-                <h3 className={styles["figure-name"]}>{figure.name}</h3>
-                {figure.title && (
-                    <span className={styles["figure-title"]}>
-                        {figure.title}
-                    </span>
-                )}
+                <div className={styles["figure-header-content"]}>
+                    <h3 className={styles["figure-name"]}>{figure.name}</h3>
+                    {figure.title && (
+                        <span className={styles["figure-title"]}>
+                            {figure.title}
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className={styles["figure-card-content"]}>
@@ -68,14 +70,10 @@ const FigureCard = ({ figure, viewCount = 0, commentCount = 0 }) => {
                 {figure.achievements && (
                     <div className={styles["figure-achievements"]}>
                         <span className={styles["info-label"]}>Thành tựu:</span>
-                        <ul>
-                            {figure.achievements
-                                .split(/[.\n]+/)
-                                .filter(Boolean)
-                                .map((ach, idx) => (
-                                    <li key={idx}>{ach.trim()}</li>
-                                ))}
-                        </ul>
+                        <div 
+                            className={styles["achievements-content"]}
+                            dangerouslySetInnerHTML={{ __html: figure.achievements }}
+                        />
                     </div>
                 )}
             </div>

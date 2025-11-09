@@ -1,19 +1,7 @@
-import axios from "axios";
-import config from "../config";
+import { createApiClient } from "./apiClient";
 
-const API_BASE_URL = `${config.serverUrl}/api/upload`;
-
-/**
- * Get authentication token based on session type
- * @returns {string|null} - Authentication token
- */
-const getAuthToken = () => {
-    if (localStorage.getItem("session_type") === "admin") {
-        return localStorage.getItem("admin_auth_token");
-    } else {
-        return localStorage.getItem("auth_token");
-    }
-};
+const API_URL = "/api/upload";
+const apiClient = createApiClient(API_URL);
 
 /**
  * Upload image to server
@@ -23,24 +11,10 @@ const getAuthToken = () => {
  */
 const uploadImage = async (base64Image, folder = "articles") => {
     try {
-        const token = getAuthToken();
-        if (!token) {
-            throw new Error("No authentication token found");
-        }
-
-        const response = await axios.post(
-            `${API_BASE_URL}/image`,
-            {
-                image: base64Image,
-                folder: folder,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+        const response = await apiClient.post("/image", {
+            image: base64Image,
+            folder: folder,
+        });
         return response.data;
     } catch (error) {
         console.error("Error uploading image:", error);
@@ -55,16 +29,8 @@ const uploadImage = async (base64Image, folder = "articles") => {
  */
 const deleteImage = async (imageUrl) => {
     try {
-        const token = getAuthToken();
-        if (!token) {
-            throw new Error("No authentication token found");
-        }
-
-        const response = await axios.delete(`${API_BASE_URL}/image`, {
+        const response = await apiClient.delete("/image", {
             data: { imageUrl },
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
         });
         return response.data;
     } catch (error) {

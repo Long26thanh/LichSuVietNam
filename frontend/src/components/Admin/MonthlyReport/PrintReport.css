@@ -1,0 +1,108 @@
+/* Print Report Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.header p {
+    color: #666;
+    font-size: 14px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #000;
+    padding: 12px 15px;
+    text-align: center;
+}
+
+th {
+    background: #f0f0f0;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+tbody tr:last-child {
+    background: #e9ecef;
+    font-weight: 700;
+}
+
+tbody tr:last-child td {
+    border-top: 2px solid #000;
+}
+
+h5 {
+    margin-top: 30px;
+    font-size: 1.1rem;
+}
+
+h6 {
+    margin-top: 20px;
+    font-size: 1rem;
+}
+
+/* Hide print buttons and section headers when printing */
+button,
+.print-tab-button,
+.print-all-content-button,
+.print-section-button,
+.section-header button,
+.content-header button {
+    display: none !important;
+}
+
+/* Adjust icon size in print */
+h6 img,
+.section-icon {
+    display: none;
+    width: 14px !important;
+    height: 14px !important;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+@media print {
+    body {
+        padding: 10px;
+    }
+    .header {
+        margin-bottom: 20px;
+    }
+    
+    /* Ensure buttons are hidden in print */
+    button,
+    .print-tab-button,
+    .print-all-content-button,
+    .print-section-button {
+        display: none !important;
+    }
+    
+    /* Make icons smaller in print */
+    h6 img,
+    .section-icon {
+        display: none;
+        width: 12px !important;
+        height: 12px !important;
+    }
+}

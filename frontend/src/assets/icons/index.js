@@ -33,3 +33,35 @@ export { default as locationsStat } from "./locations-stat.svg";
 export { default as periodsStat } from "./periods-stat.svg";
 export { default as visitsStat } from "./visits-stat.svg";
 export { default as commentsStat } from "./comments-stat.svg";
+
+// Dashboard icons
+export { default as activity } from "./activity.svg";
+export { default as trendingUp } from "./trending-up.svg";
+export { default as trendingDown } from "./trending-down.svg";
+export { default as infoIcon } from "./info.svg";
+export { default as alert } from "./alert.svg";
+export { default as checkCircle } from "./check-circle.svg";
+export { default as barChart } from "./bar-chart.svg";
+export { default as clock } from "./clock.svg";
+export { default as calendar } from "./calendar.svg";
+export { default as filePlus } from "./file-plus.svg";
+export { default as usersGroup } from "./users-group.svg";
+
+// Action icons
+export { default as edit } from "./edit.svg";
+export { default as trash } from "./trash.svg";
+export { default as mapPin } from "./map-pin.svg";
+export { default as upload } from "./upload.svg";
+export { default as camera } from "./camera.svg";
+export { default as closeIcon } from "./close.svg";
+export { default as save } from "./save.svg";
+export { default as cancel } from "./cancel.svg";
+export { default as check } from "./check.svg";
+export { default as printer } from "./printer.svg";
+
+// Location/Map icons
+export { default as locationDot } from "./location-dot.svg";
+export { default as globe } from "./globe.svg";
+export { default as crosshair } from "./crosshair.svg";
+export { default as navigation } from "./navigation.svg";
+export { default as zoomIn } from "./zoom-in.svg";

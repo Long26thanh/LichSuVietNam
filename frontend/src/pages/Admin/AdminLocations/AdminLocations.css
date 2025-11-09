@@ -1,5 +1,5 @@
-.admin-locations {
-    max-width: 1200px;
+.locations-management {
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -129,4 +129,108 @@
     margin: 0;
     box-shadow: none;
     padding: 0;
+}
+
+/* Button icon styles */
+.btn-icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+.row-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+/* Location summary cell styling */
+.summary-cell {
+    max-width: 300px;
+}
+
+.location-summary {
+    font-size: 0.875rem;
+    color: #4a5568;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: calc(0.875rem * 1.5 * 2);
+    text-align: left;
+}
+
+/* Handle HTML formatting from text editor */
+.location-summary p {
+    margin: 0;
+    display: inline;
+}
+
+.location-summary strong,
+.location-summary b {
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.location-summary em,
+.location-summary i {
+    font-style: italic;
+}
+
+.location-summary u {
+    text-decoration: underline;
+}
+
+.location-summary s,
+.location-summary strike {
+    text-decoration: line-through;
+}
+
+.location-summary ul,
+.location-summary ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    display: inline;
+}
+
+.location-summary li {
+    display: inline;
+}
+
+.location-summary li:not(:last-child)::after {
+    content: ", ";
+}
+
+.location-summary br {
+    display: none;
+}
+
+.location-summary h1,
+.location-summary h2,
+.location-summary h3,
+.location-summary h4,
+.location-summary h5,
+.location-summary h6 {
+    font-size: inherit;
+    font-weight: 700;
+    margin: 0;
+    display: inline;
+}
+
+.location-summary img {
+    display: none;
+}
+
+.location-summary a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.location-summary a:hover {
+    text-decoration: underline;
 }

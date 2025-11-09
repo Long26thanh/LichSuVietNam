@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { commentService, userService } from "../../services";
 import { useAuth } from "../../contexts/AuthContext";
+import { getImageUrl } from "../../utils/imageUtils";
 import "./CommentSection.css";
 
 const CommentSection = ({ pageType, pageId }) => {
@@ -284,7 +285,7 @@ const CommentSection = ({ pageType, pageId }) => {
             <div className="comment-avatar">
                 {comment.userInfo?.avatar_url ? (
                     <img
-                        src={comment.userInfo.avatar_url}
+                        src={getImageUrl(comment.userInfo.avatar_url)}
                         alt={comment.userInfo.username}
                     />
                 ) : (
@@ -373,8 +374,8 @@ const CommentSection = ({ pageType, pageId }) => {
                     )}
                 </div>
 
-                {/* View replies button */}
-                {comment.reply_count && comment.reply_count > 0 && (
+                {/* View replies button - Only show if reply_count > 0 */}
+                {comment.reply_count > 0 && (
                     <button
                         onClick={() => toggleReplies(comment.id)}
                         className="btn-view-replies"
@@ -394,7 +395,7 @@ const CommentSection = ({ pageType, pageId }) => {
                         <div className="comment-form-avatar">
                             {user?.avatar_url ? (
                                 <img
-                                    src={user.avatar_url}
+                                    src={getImageUrl(user.avatar_url)}
                                     alt={user.username}
                                 />
                             ) : (
@@ -466,7 +467,7 @@ const CommentSection = ({ pageType, pageId }) => {
                 <form onSubmit={handleSubmitComment} className="comment-form">
                     <div className="comment-form-avatar">
                         {user.avatar_url ? (
-                            <img src={user.avatar_url} alt={user.username} />
+                            <img src={getImageUrl(user.avatar_url)} alt={user.username} />
                         ) : (
                             <div className="avatar-placeholder">
                                 {user.username?.charAt(0).toUpperCase() ||

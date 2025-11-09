@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import routes from "@/config/routes";
+import config from "@/config";
 import { formatViewCount } from "@/utils/viewUtils";
 import styles from "./ArticleCard.module.css";
 
@@ -22,13 +23,30 @@ const ArticleCard = ({ article, viewCount = 0, commentCount = 0 }) => {
         });
     };
 
+    // Helper function to get full image URL
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        
+        // If already a full URL (http/https) or data URL, return as is
+        if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+            return imagePath;
+        }
+        
+        // If it's a relative path, prepend server URL
+        if (imagePath.startsWith('/assets/images/')) {
+            return `${config.serverUrl}${imagePath}`;
+        }
+        
+        return imagePath;
+    };
+
     return (
         <div className={styles["article-card"]} onClick={handleCardClick}>
             {/* Cover Image */}
             <div className={styles["article-card-image"]}>
                 {article.coverImage ? (
                     <img
-                        src={article.coverImage}
+                        src={getImageUrl(article.coverImage)}
                         alt={article.title}
                         onError={(e) => {
                             e.target.src =

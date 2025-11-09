@@ -3,6 +3,12 @@ import { Button, TextEditor } from "@/components";
 import periodService from "@/services/periodService";
 import locationService from "@/services/locationService";
 import figureService from "@/services/figureService";
+import uploadService from "@/services/uploadService";
+import {
+    isBase64Image,
+    extractBase64Images,
+    replaceBase64WithUrls,
+} from "@/utils";
 import styles from "./EventForm.module.css";
 
 const defaultValues = {
@@ -252,23 +258,95 @@ const EventForm = ({
         e.preventDefault();
         if (!validate()) return;
 
-        const formData = {
-            name: values.name,
-            description: values.description,
-            summary: values.summary,
-            significance: values.significance || null,
-            start_date: values.startDate ? Number(values.startDate) : null,
-            start_month: values.startMonth ? Number(values.startMonth) : null,
-            start_year: Number(values.startYear),
-            end_date: values.endDate ? Number(values.endDate) : null,
-            end_month: values.endMonth ? Number(values.endMonth) : null,
-            end_year: values.endYear ? Number(values.endYear) : null,
-            location_id: values.locationId || null,
-            period_id: values.periodId || null,
-            related_figures: selectedFigures,
-        };
+        try {
+            // Upload ảnh từ description, summary và significance
+            let processedDescription = values.description;
+            let processedSummary = values.summary;
+            let processedSignificance = values.significance;
 
-        await onSubmit(formData);
+            // Extract và upload ảnh từ description
+            const base64ImagesInDescription = extractBase64Images(values.description);
+            if (base64ImagesInDescription.length > 0) {
+                const replacementMap = {};
+                for (const base64Image of base64ImagesInDescription) {
+                    try {
+                        const uploadResponse = await uploadService.uploadImage(
+                            base64Image,
+                            "events"
+                        );
+                        if (uploadResponse.success) {
+                            replacementMap[base64Image] = uploadResponse.data.url;
+                        }
+                    } catch (imgError) {
+                        console.error("Failed to upload description image:", imgError);
+                    }
+                }
+                processedDescription = replaceBase64WithUrls(values.description, replacementMap);
+            }
+
+            // Extract và upload ảnh từ summary
+            const base64ImagesInSummary = extractBase64Images(values.summary);
+            if (base64ImagesInSummary.length > 0) {
+                const replacementMap = {};
+                for (const base64Image of base64ImagesInSummary) {
+                    try {
+                        const uploadResponse = await uploadService.uploadImage(
+                            base64Image,
+                            "events"
+                        );
+                        if (uploadResponse.success) {
+                            replacementMap[base64Image] = uploadResponse.data.url;
+                        }
+                    } catch (imgError) {
+                        console.error("Failed to upload summary image:", imgError);
+                    }
+                }
+                processedSummary = replaceBase64WithUrls(values.summary, replacementMap);
+            }
+
+            // Extract và upload ảnh từ significance
+            if (values.significance) {
+                const base64ImagesInSignificance = extractBase64Images(values.significance);
+                if (base64ImagesInSignificance.length > 0) {
+                    const replacementMap = {};
+                    for (const base64Image of base64ImagesInSignificance) {
+                        try {
+                            const uploadResponse = await uploadService.uploadImage(
+                                base64Image,
+                                "events"
+                            );
+                            if (uploadResponse.success) {
+                                replacementMap[base64Image] = uploadResponse.data.url;
+                            }
+                        } catch (imgError) {
+                            console.error("Failed to upload significance image:", imgError);
+                        }
+                    }
+                    processedSignificance = replaceBase64WithUrls(values.significance, replacementMap);
+                }
+            }
+
+            const formData = {
+                name: values.name,
+                description: processedDescription,
+                summary: processedSummary,
+                significance: processedSignificance || null,
+                start_date: values.startDate ? Number(values.startDate) : null,
+                start_month: values.startMonth ? Number(values.startMonth) : null,
+                start_year: Number(values.startYear),
+                end_date: values.endDate ? Number(values.endDate) : null,
+                end_month: values.endMonth ? Number(values.endMonth) : null,
+                end_year: values.endYear ? Number(values.endYear) : null,
+                location_id: values.locationId || null,
+                period_id: values.periodId || null,
+                related_figures: selectedFigures,
+            };
+
+            await onSubmit(formData);
+        } catch (error) {
+            console.error("Error processing form:", error);
+            alert("Có lỗi xảy ra khi xử lý form");
+        }
     };
 
     if (loadingData) {

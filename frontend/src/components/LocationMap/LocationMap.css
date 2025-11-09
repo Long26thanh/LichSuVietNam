@@ -1,0 +1,108 @@
+.location-map-container {
+    width: 100%;
+    height: 450px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid #e2e8f0;
+    margin: 20px 0;
+}
+
+.location-map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Popup Styling */
+.map-popup {
+    min-width: 200px;
+    padding: 8px 0;
+}
+
+.map-popup h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: #1f2937;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.map-popup p {
+    margin: 8px 0;
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.map-popup .coordinates {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.map-popup .coordinates strong {
+    color: #374151;
+    font-weight: 600;
+}
+
+/* Leaflet Controls Styling */
+.location-map .leaflet-control-zoom {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.location-map .leaflet-control-zoom a {
+    background-color: white;
+    color: #667eea;
+    border: none;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.location-map .leaflet-control-zoom a:hover {
+    background-color: #f3f4f6;
+    color: #764ba2;
+}
+
+.location-map .leaflet-control-zoom a:last-child {
+    border-bottom: none;
+}
+
+/* Leaflet Attribution */
+.location-map .leaflet-control-attribution {
+    background-color: rgba(255, 255, 255, 0.9);
+    font-size: 0.7rem;
+    padding: 4px 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .location-map-container {
+        height: 350px;
+        border-radius: 8px;
+    }
+
+    .map-popup h3 {
+        font-size: 1rem;
+    }
+
+    .map-popup p {
+        font-size: 0.85rem;
+    }
+
+    .map-popup .coordinates {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .location-map-container {
+        height: 300px;
+        margin: 16px 0;
+    }
+}

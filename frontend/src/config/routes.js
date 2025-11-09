@@ -18,6 +18,7 @@ const routes = {
     admin: "/admin",
     adminLogin: "/admin/login",
     adminDashboard: "/admin/dashboard",
+    adminReportPrint: "/admin/report-print",
     adminUsers: "/admin/users",
     adminEvents: "/admin/events",
     adminFigures: "/admin/figures",

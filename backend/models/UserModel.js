@@ -121,6 +121,12 @@ class User {
             const password_hash = await bcrypt.hash(password, 10);
 
             // Chèn người dùng mới vào cơ sở dữ liệu
+            // Ensure avatar_url length does not exceed DB column limit (varchar(500))
+            const safeAvatarUrl =
+                typeof avatar_url === "string" && avatar_url.length > 500
+                    ? avatar_url.slice(0, 500)
+                    : avatar_url;
+
             const result = await query(
                 `
                 INSERT INTO users (username, email, phone, birthday, address, password_hash, full_name, avatar_url, role, is_active, bio)
@@ -135,7 +141,7 @@ class User {
                     address,
                     password_hash,
                     full_name,
-                    avatar_url,
+                    safeAvatarUrl,
                     role,
                     is_active,
                     bio,
@@ -167,8 +173,18 @@ class User {
             for (const [key, value] of Object.entries(updateData)) {
                 if (value !== undefined && key !== "id") {
                     // Convert empty birthday string to null
-                    const processedValue =
+                    let processedValue =
                         key === "birthday" && value === "" ? null : value;
+
+                    // If avatar_url is too long for the DB column (varchar(500)), truncate it
+                    if (
+                        key === "avatar_url" &&
+                        typeof processedValue === "string" &&
+                        processedValue.length > 500
+                    ) {
+                        processedValue = processedValue.slice(0, 500);
+                    }
+
                     fields.push(`${key} = $${index}`);
                     values.push(processedValue);
                     index++;
@@ -312,6 +328,85 @@ class User {
             return result.rows;
         } catch (error) {
             console.error("Error getting user stats by date range:", error);
+            throw error;
+        }
+    }
+
+    // Thống kê chi tiết người dùng theo ngày/tháng/năm
+    static async getDetailedStatsByPeriod(startDate, endDate, period = "day") {
+        try {
+            let dateFormat;
+            switch (period) {
+                case "day":
+                    dateFormat = "YYYY-MM-DD";
+                    break;
+                case "week":
+                    dateFormat = "IYYY-IW";
+                    break;
+                case "month":
+                    dateFormat = "YYYY-MM";
+                    break;
+                case "year":
+                    dateFormat = "YYYY";
+                    break;
+                default:
+                    dateFormat = "YYYY-MM-DD";
+            }
+
+            const result = await query(
+                `SELECT 
+                    TO_CHAR(created_at, '${dateFormat}') as period,
+                    COUNT(*) as total,
+                    COUNT(CASE WHEN role = 'admin' THEN 1 END) as admin_count,
+                    COUNT(CASE WHEN role = 'user' THEN 1 END) as user_count,
+                    COUNT(CASE WHEN is_active = true THEN 1 END) as active_users
+                FROM users
+                WHERE created_at BETWEEN $1 AND $2
+                GROUP BY period
+                ORDER BY period ASC`,
+                [startDate, endDate]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error("Error getting detailed user stats by period:", error);
+            throw error;
+        }
+    }
+
+    // Đếm người dùng mới trong khoảng thời gian
+    static async countByDateRange(startDate, endDate) {
+        try {
+            const result = await query(
+                `SELECT COUNT(*) as count FROM users 
+                WHERE created_at BETWEEN $1 AND $2`,
+                [startDate, endDate]
+            );
+            return parseInt(result.rows[0].count, 10);
+        } catch (error) {
+            console.error("Error counting users by date range:", error);
+            throw error;
+        }
+    }
+
+    // Lấy danh sách người dùng mới theo khoảng thời gian
+    static async getNewUsersByDateRange(startDate, endDate) {
+        try {
+            const result = await query(
+                `SELECT 
+                    id,
+                    username,
+                    full_name,
+                    email,
+                    role,
+                    created_at
+                FROM users 
+                WHERE created_at BETWEEN $1 AND $2
+                ORDER BY created_at DESC`,
+                [startDate, endDate]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error("Error getting new users by date range:", error);
             throw error;
         }
     }

@@ -155,7 +155,7 @@
 .timeline-item-container {
     position: relative;
     width: 100%;
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 3rem 0; /* Tăng margin để có khoảng cách lớn hơn */
     display: flex;
     align-items: center;

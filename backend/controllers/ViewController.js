@@ -12,8 +12,18 @@ class ViewController {
                 maSuKien,
                 maDiaDanh,
             } = req.body;
+            
+            // Lấy user ID nếu đã đăng nhập
             const userId = req.user?.id || null;
-            const ipAddress = req.ip || req.connection.remoteAddress;
+            
+            // Lấy IP address từ nhiều nguồn khác nhau
+            const ipAddress = 
+                req.headers['x-forwarded-for']?.split(',')[0].trim() || 
+                req.headers['x-real-ip'] || 
+                req.connection.remoteAddress || 
+                req.socket.remoteAddress ||
+                req.ip;
+            
 
             // Validate loaiTrang
             const validTypes = [

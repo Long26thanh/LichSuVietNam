@@ -204,6 +204,31 @@ class Event {
             throw error;
         }
     }
+
+    // Lấy danh sách sự kiện theo khoảng thời gian
+    static async getByDateRange(startDate, endDate) {
+        try {
+            const result = await query(
+                `SELECT 
+                    sk."MaSuKien" as id,
+                    sk."TenSuKien" as name,
+                    sk."NgayTao" as created_date,
+                    COALESCE(COUNT(DISTINCT lx."MaLuotXem"), 0) as view_count,
+                    COALESCE(COUNT(DISTINCT bl."MaBinhLuan"), 0) as comment_count
+                FROM "SuKien" sk
+                LEFT JOIN "LuotXem" lx ON sk."MaSuKien" = lx."MaSuKien" AND lx."LoaiTrang" = 'Sự kiện'
+                LEFT JOIN "BinhLuan" bl ON sk."MaSuKien" = bl."MaSuKien" AND bl."LoaiTrang" = 'Sự kiện'
+                WHERE sk."NgayTao" >= $1 AND sk."NgayTao" <= $2
+                GROUP BY sk."MaSuKien", sk."TenSuKien", sk."NgayTao"
+                ORDER BY sk."NgayTao" DESC`,
+                [startDate, endDate]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error("Error getting events by date range:", error);
+            throw error;
+        }
+    }
 }
 
 export default Event;

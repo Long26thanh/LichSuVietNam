@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { previewService, periodService } from "@/services";
 import { recordWebsiteView, recordPeriodView } from "@/services/viewService";
+import { convertImagesToAbsoluteUrls } from "@/utils";
 import "./PeriodDetail.css";
 import { TextEditor, CommentSection } from "@/components";
 
@@ -122,7 +123,7 @@ const PeriodDetail = ({ isPreview = false }) => {
                         <h2 className="section-title">Tóm tắt</h2>
                         <div
                             className="section-content"
-                            dangerouslySetInnerHTML={{ __html: period.summary }}
+                            dangerouslySetInnerHTML={{ __html: convertImagesToAbsoluteUrls(period.summary) }}
                         ></div>
                     </div>
                 )}
@@ -132,7 +133,7 @@ const PeriodDetail = ({ isPreview = false }) => {
                         <div
                             className="section-content"
                             dangerouslySetInnerHTML={{
-                                __html: period.description,
+                                __html: convertImagesToAbsoluteUrls(period.description),
                             }}
                         ></div>
                     </div>

@@ -28,6 +28,11 @@ const routes = [
         layout: AdminLayout,
     },
     {
+        path: config.routes.adminReportPrint,
+        page: Pages.AdminReportPrint,
+        layout: null,
+    },
+    {
         path: config.routes.adminUsers,
         page: Pages.AdminUsers,
         layout: AdminLayout,

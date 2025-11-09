@@ -9,6 +9,7 @@ import {
 } from "@/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import styles from "./UserForm.module.css";
+import uploadService from "@/services/uploadService";
 
 const defaultValues = {
     full_name: "",
@@ -113,6 +114,24 @@ const UserForm = ({
             return;
         }
         // Tạo payload chỉ với các trường cần thiết
+        let avatarUrl = values.avatar_url || null;
+
+        // If avatar is a base64 image, upload it to server (store under 'avatars')
+        try {
+            if (typeof avatarUrl === "string" && avatarUrl.startsWith("data:image/")) {
+                const res = await uploadService.uploadImage(avatarUrl, "avatars");
+                if (res && res.success && res.data && res.data.url) {
+                    avatarUrl = res.data.url;
+                }
+            }
+        } catch (uploadErr) {
+            console.error("Avatar upload failed:", uploadErr);
+            // Keep avatarUrl as original (base64) so backend truncation will handle it,
+            // but surface error to user
+            setErrors((p) => ({ ...p, avatar_url: "Tải ảnh thất bại" }));
+            return;
+        }
+
         const payload = {
             full_name: values.full_name,
             username: values.username,
@@ -123,7 +142,7 @@ const UserForm = ({
             birthday: values.birthday === "" ? null : values.birthday,
             address: values.address || null,
             bio: values.bio || null,
-            avatar_url: values.avatar_url || null,
+            avatar_url: avatarUrl || null,
             updated_at: new Date().toISOString(),
         };
 
@@ -201,7 +220,7 @@ const UserForm = ({
                             )}
                         </div>
 
-                        <div className="form-group">
+                        <div className={styles["form-group"]}>
                             <label>Số điện thoại</label>
                             <input
                                 name="phone"
@@ -210,14 +229,14 @@ const UserForm = ({
                                 placeholder="Ví dụ: +84901234567"
                             />
                             {errors.phone && (
-                                <span className="error-text">
+                                <span className={styles["error-text"]}>
                                     {errors.phone}
                                 </span>
                             )}
                         </div>
 
                         {!isEdit && (
-                            <div className="form-group">
+                            <div className={styles["form-group"]}>
                                 <label>Mật khẩu *</label>
                                 <input
                                     type="password"
@@ -227,14 +246,14 @@ const UserForm = ({
                                     placeholder="Ít nhất 6 ký tự, có chữ hoa/thường và số"
                                 />
                                 {errors.password && (
-                                    <span className="error-text">
+                                    <span className={styles["error-text"]}>
                                         {errors.password}
                                     </span>
                                 )}
                             </div>
                         )}
 
-                        <div className="form-group">
+                        <div className={styles["form-group"]}>
                             <label>Vai trò</label>
                             <select
                                 name="role"

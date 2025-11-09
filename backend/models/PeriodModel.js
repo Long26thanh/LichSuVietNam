@@ -131,6 +131,31 @@ class Period {
             throw error;
         }
     }
+
+    // Lấy danh sách thời kỳ theo khoảng thời gian
+    static async getByDateRange(startDate, endDate) {
+        try {
+            const result = await query(
+                `SELECT 
+                    tk."MaThoiKy" as id,
+                    tk."TenThoiKy" as name,
+                    tk."NgayTao" as created_date,
+                    COALESCE(COUNT(DISTINCT lx."MaLuotXem"), 0) as view_count,
+                    COALESCE(COUNT(DISTINCT bl."MaBinhLuan"), 0) as comment_count
+                FROM "ThoiKy" tk
+                LEFT JOIN "LuotXem" lx ON tk."MaThoiKy" = lx."MaThoiKy" AND lx."LoaiTrang" = 'Thời kỳ'
+                LEFT JOIN "BinhLuan" bl ON tk."MaThoiKy" = bl."MaThoiKy" AND bl."LoaiTrang" = 'Thời kỳ'
+                WHERE tk."NgayTao" >= $1 AND tk."NgayTao" <= $2
+                GROUP BY tk."MaThoiKy", tk."TenThoiKy", tk."NgayTao"
+                ORDER BY tk."NgayTao" DESC`,
+                [startDate, endDate]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error("Error getting periods by date range:", error);
+            throw error;
+        }
+    }
 }
 
 export default Period;

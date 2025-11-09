@@ -1,6 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components";
 import { TextEditor } from "@/components";
+import uploadService from "@/services/uploadService";
+import {
+    isBase64Image,
+    extractBase64Images,
+    replaceBase64WithUrls,
+} from "@/utils";
 import styles from "./PeriodForm.module.css";
 
 const defaultValues = {
@@ -84,15 +90,64 @@ const PeriodForm = ({
         e.preventDefault();
         if (!validate()) return;
 
-        const formData = {
-            name: values.name,
-            description: values.description,
-            summary: values.summary,
-            start_year: Number(values.start_year),
-            end_year: Number(values.end_year),
-        };
+        try {
+            // Upload ảnh từ description và summary
+            let processedDescription = values.description;
+            let processedSummary = values.summary;
 
-        await onSubmit(formData);
+            // Extract và upload ảnh từ description
+            const base64ImagesInDescription = extractBase64Images(values.description);
+            if (base64ImagesInDescription.length > 0) {
+                const replacementMap = {};
+                for (const base64Image of base64ImagesInDescription) {
+                    try {
+                        const uploadResponse = await uploadService.uploadImage(
+                            base64Image,
+                            "periods"
+                        );
+                        if (uploadResponse.success) {
+                            replacementMap[base64Image] = uploadResponse.data.url;
+                        }
+                    } catch (imgError) {
+                        console.error("Failed to upload description image:", imgError);
+                    }
+                }
+                processedDescription = replaceBase64WithUrls(values.description, replacementMap);
+            }
+
+            // Extract và upload ảnh từ summary
+            const base64ImagesInSummary = extractBase64Images(values.summary);
+            if (base64ImagesInSummary.length > 0) {
+                const replacementMap = {};
+                for (const base64Image of base64ImagesInSummary) {
+                    try {
+                        const uploadResponse = await uploadService.uploadImage(
+                            base64Image,
+                            "periods"
+                        );
+                        if (uploadResponse.success) {
+                            replacementMap[base64Image] = uploadResponse.data.url;
+                        }
+                    } catch (imgError) {
+                        console.error("Failed to upload summary image:", imgError);
+                    }
+                }
+                processedSummary = replaceBase64WithUrls(values.summary, replacementMap);
+            }
+
+            const formData = {
+                name: values.name,
+                description: processedDescription,
+                summary: processedSummary,
+                start_year: Number(values.start_year),
+                end_year: Number(values.end_year),
+            };
+
+            await onSubmit(formData);
+        } catch (error) {
+            console.error("Error processing form:", error);
+            alert("Có lỗi xảy ra khi xử lý form");
+        }
     };
 
     return (

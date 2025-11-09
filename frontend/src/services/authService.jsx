@@ -1,34 +1,16 @@
 import axios from "axios";
 import config from "../config";
+import { createApiClient } from "./apiClient";
+import { setAuthServiceInstance } from "./apiClient";
 
 const API_URL = "/api/auth";
 const USER_API_URL = "/api/users";
 
 // Tạo instance axios với cấu hình cơ bản
-const apiClient = axios.create({
-    baseURL: config.serverUrl + API_URL,
-    timeout: 10000,
-    withCredentials: true,
-    headers: {
-        "Content-Type": "application/json",
-        authorization: localStorage.getItem("auth_token")
-            ? `Bearer ${localStorage.getItem("auth_token")}`
-            : "",
-    },
-});
+const apiClient = createApiClient(API_URL);
 
 // Tạo instance axios cho user API
-const userApiClient = axios.create({
-    baseURL: config.serverUrl + USER_API_URL,
-    timeout: 10000,
-    withCredentials: true,
-    headers: {
-        "Content-Type": "application/json",
-        authorization: localStorage.getItem("auth_token")
-            ? `Bearer ${localStorage.getItem("auth_token")}`
-            : "",
-    },
-});
+const userApiClient = createApiClient(USER_API_URL);
 
 const testApiConnectivity = async () => {
     try {
@@ -44,26 +26,22 @@ const testApiConnectivity = async () => {
 
 class AuthService {
     constructor() {
-        // Session cho user thường (đọc cả key mới và cũ để backward compatible)
+        // Session cho user thường
         this.userToken = localStorage.getItem("auth_token") || null;
-        this.userRefreshToken = localStorage.getItem("refresh_token") || null;
         this.userUser =
             JSON.parse(localStorage.getItem("user") || "null") || null;
 
         // Session cho admin
         this.adminToken = localStorage.getItem("admin_auth_token") || null;
-        this.adminRefreshToken =
-            localStorage.getItem("admin_refresh_token") || null;
         this.adminUser = JSON.parse(localStorage.getItem("admin_user")) || null;
 
         // Session hiện tại
         this.currentSessionType =
             localStorage.getItem("session_type") || "user";
 
-        // Con trỏ tiện dụng trỏ tới session hiện tại để interceptor sử dụng
+        // Con trỏ tiện dụng trỏ tới session hiện tại
         const current = this.getCurrentSession();
         this.token = current.token || null;
-        this.currentRefreshToken = current.refreshToken || null;
         this.user = current.user || null;
         this.tokenRefreshPromise = null;
         this.validationInProgress = false;
@@ -71,9 +49,79 @@ class AuthService {
         this.validationCacheDuration = 30000;
         this.tokenExpiresAt = null;
         this.lastActivityRefreshTime = 0;
+        
+        // Thời gian refresh token trước khi hết hạn (3 phút)
+        this.refreshThreshold = 3 * 60 * 1000;
+        
+        // Thời gian giữa các lần check khi có activity (30 giây)
+        this.activityCheckInterval = 30 * 1000;
+        
+        // Flag để tránh nhiều refresh cùng lúc
+        this.isRefreshing = false;
 
         this.setupInterceptors();
         this.initializeActivityRefresh();
+        this.startPeriodicTokenCheck();
+        
+        // Set this instance vào apiClient để các service khác có thể dùng
+        setAuthServiceInstance(this);
+    }
+
+    // Decode JWT token để lấy thông tin expiration
+    decodeToken(token) {
+        try {
+            if (!token) return null;
+            const base64Url = token.split('.')[1];
+            if (!base64Url) return null;
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+            return JSON.parse(jsonPayload);
+        } catch (error) {
+            console.error('Error decoding token:', error);
+            return null;
+        }
+    }
+
+    // Kiểm tra token có hết hạn không
+    isTokenExpired(token) {
+        const decoded = this.decodeToken(token);
+        if (!decoded || !decoded.exp) return true;
+        
+        // exp trong JWT là timestamp tính bằng giây
+        const expirationTime = decoded.exp * 1000;
+        const currentTime = Date.now();
+        
+        // Token hết hạn nếu thời gian hiện tại >= thời gian hết hạn
+        return currentTime >= expirationTime;
+    }
+
+    // Kiểm tra token sắp hết hạn (trong vòng refreshThreshold)
+    isTokenExpiringSoon(token) {
+        const decoded = this.decodeToken(token);
+        if (!decoded || !decoded.exp) return true;
+        
+        const expirationTime = decoded.exp * 1000;
+        const currentTime = Date.now();
+        const timeUntilExpiry = expirationTime - currentTime;
+        
+        // Token sắp hết hạn nếu còn ít hơn refreshThreshold (10 phút)
+        return timeUntilExpiry > 0 && timeUntilExpiry <= this.refreshThreshold;
+    }
+
+    // Lấy thời gian còn lại của token (milliseconds)
+    getTokenTimeRemaining(token) {
+        const decoded = this.decodeToken(token);
+        if (!decoded || !decoded.exp) return 0;
+        
+        const expirationTime = decoded.exp * 1000;
+        const currentTime = Date.now();
+        
+        return Math.max(0, expirationTime - currentTime);
     }
 
     // Lưu thông tin đăng nhập
@@ -92,10 +140,28 @@ class AuthService {
         localStorage.removeItem("user");
     }
 
+    // Xóa tokens của session hiện tại
+    clearCurrentSessionTokens() {
+        if (this.currentSessionType === "admin") {
+            this.adminToken = null;
+            localStorage.removeItem("admin_auth_token");
+            localStorage.removeItem("admin_user");
+        } else {
+            this.userToken = null;
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("user");
+        }
+        this.token = null;
+        this.user = null;
+    }
+
     setupInterceptors() {
-        // Thêm interceptor để tự động thêm token vào header cho apiClient
+        // Interceptor cho apiClient
         apiClient.interceptors.request.use(
-            (config) => {
+            async (config) => {
+                // Kiểm tra và refresh token nếu cần trước khi gửi request
+                await this.checkAndRefreshToken();
+                
                 if (this.token) {
                     config.headers["Authorization"] = `Bearer ${this.token}`;
                 }
@@ -106,9 +172,12 @@ class AuthService {
             }
         );
 
-        // Thêm interceptor để tự động thêm token vào header cho userApiClient
+        // Interceptor cho userApiClient
         userApiClient.interceptors.request.use(
-            (config) => {
+            async (config) => {
+                // Kiểm tra và refresh token nếu cần trước khi gửi request
+                await this.checkAndRefreshToken();
+                
                 if (this.token) {
                     config.headers["Authorization"] = `Bearer ${this.token}`;
                 }
@@ -119,61 +188,132 @@ class AuthService {
             }
         );
 
-        // Thêm interceptor để xử lý lỗi 401 và tự động refresh token cho apiClient
+        // Response interceptor cho apiClient - xử lý lỗi 401
         apiClient.interceptors.response.use(
             (response) => response,
             async (error) => {
                 const originalRequest = error.config;
 
-                // Bỏ qua refresh token nếu có flag _skipAuthRefresh (như logout)
+                // Bỏ qua refresh token nếu có flag _skipAuthRefresh
                 if (originalRequest._skipAuthRefresh) {
                     return Promise.reject(error);
                 }
 
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true;
+                    
                     try {
+                        // Thử refresh token
                         await this.refreshToken();
-                        // Thêm token mới vào header và thử lại request
-                        originalRequest.headers[
-                            "Authorization"
-                        ] = `Bearer ${this.token}`;
+                        
+                        // Retry request với token mới
+                        originalRequest.headers["Authorization"] = `Bearer ${this.token}`;
                         return apiClient(originalRequest);
                     } catch (refreshError) {
-                        console.error("Token refresh failed:", refreshError);
+                        console.error("Token refresh failed on 401:", refreshError);
+                        // Nếu refresh thất bại, logout
+                        this.handleTokenExpiration();
+                        return Promise.reject(refreshError);
                     }
                 }
+                
                 return Promise.reject(error);
             }
         );
 
-        // Thêm interceptor để xử lý lỗi 401 và tự động refresh token cho userApiClient
+        // Response interceptor cho userApiClient - xử lý lỗi 401
         userApiClient.interceptors.response.use(
             (response) => response,
             async (error) => {
                 const originalRequest = error.config;
 
-                // Bỏ qua refresh token nếu có flag _skipAuthRefresh (như logout)
+                // Bỏ qua refresh token nếu có flag _skipAuthRefresh
                 if (originalRequest._skipAuthRefresh) {
                     return Promise.reject(error);
                 }
 
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true;
+                    
                     try {
+                        // Thử refresh token
                         await this.refreshToken();
-                        // Thêm token mới vào header và thử lại request
-                        originalRequest.headers[
-                            "Authorization"
-                        ] = `Bearer ${this.token}`;
+                        
+                        // Retry request với token mới
+                        originalRequest.headers["Authorization"] = `Bearer ${this.token}`;
                         return userApiClient(originalRequest);
                     } catch (refreshError) {
-                        console.error("Token refresh failed:", refreshError);
+                        console.error("Token refresh failed on 401:", refreshError);
+                        // Nếu refresh thất bại, logout
+                        this.handleTokenExpiration();
+                        return Promise.reject(refreshError);
                     }
                 }
+                
                 return Promise.reject(error);
             }
         );
+    }
+
+    // Hàm kiểm tra và refresh token nếu cần
+    async checkAndRefreshToken() {
+        // Không có token thì bỏ qua
+        if (!this.token) {
+            return;
+        }
+
+        // Đang refresh rồi thì đợi
+        if (this.isRefreshing) {
+            // Đợi refresh hoàn thành
+            await this.tokenRefreshPromise;
+            return;
+        }
+
+        const timeRemaining = this.getTokenTimeRemaining(this.token);
+        
+        // Log thời gian còn lại (cho debug)
+        const minutesRemaining = Math.floor(timeRemaining / 60000);
+        if (minutesRemaining <= 15) {
+            console.log(`Access token expires in ${minutesRemaining} minutes`);
+        }
+
+        // Access token đã hết hạn hoàn toàn
+        if (timeRemaining <= 0) {
+            console.warn('Access token has completely expired');
+            // Thử refresh - backend sẽ kiểm tra refresh token trong cookie
+            console.log('Attempting to refresh expired access token...');
+            try {
+                await this.refreshToken();
+                return;
+            } catch (error) {
+                console.error('Failed to refresh expired token:', error);
+                // Nếu refresh thất bại (refresh token hết hạn), backend sẽ trả 401
+                // và handleTokenExpiration sẽ được gọi trong catch block của refreshToken
+                throw error;
+            }
+        }
+        
+        // Access token sắp hết hạn (còn < 3 phút) → refresh ngay
+        if (timeRemaining <= this.refreshThreshold) {
+            console.log('Access token expiring soon, refreshing...');
+            try {
+                await this.refreshToken();
+            } catch (error) {
+                console.error('Failed to refresh expiring token:', error);
+                // Lỗi sẽ được xử lý trong refreshToken()
+                throw error;
+            }
+        }
+    }
+
+    // Xử lý khi token hết hạn hoàn toàn
+    handleTokenExpiration() {
+        console.log('Handling token expiration - logging out');
+        this.clearCurrentSessionTokens();
+        
+        // Redirect về trang login
+        const isAdmin = this.currentSessionType === 'admin';
+        window.location.href = isAdmin ? '/admin/login' : '/login';
     }
 
     // ===========================
@@ -185,14 +325,12 @@ class AuthService {
         if (this.currentSessionType === "admin") {
             return {
                 token: this.adminToken,
-                refreshToken: this.adminRefreshToken,
                 user: this.adminUser,
                 type: "admin",
             };
         } else {
             return {
                 token: this.userToken,
-                refreshToken: this.userRefreshToken,
                 user: this.userUser,
                 type: "user",
             };
@@ -204,10 +342,9 @@ class AuthService {
         this.currentSessionType = type;
         localStorage.setItem("session_type", type);
 
-        // Đồng bộ con trỏ token/user hiện tại và interceptor
+        // Đồng bộ con trỏ token/user hiện tại
         const currentSession = this.getCurrentSession();
         this.token = currentSession.token || null;
-        this.currentRefreshToken = currentSession.refreshToken || null;
         this.user = currentSession.user || null;
         this.updateInterceptors(currentSession.token);
     }
@@ -408,65 +545,71 @@ class AuthService {
 
     // Hàm refresh token
     async refreshToken() {
+        // Nếu đang refresh, đợi promise hiện tại
         if (this.tokenRefreshPromise) {
             return this.tokenRefreshPromise;
         }
 
+        this.isRefreshing = true;
+        
         this.tokenRefreshPromise = new Promise(async (resolve, reject) => {
             try {
-                if (!this.currentRefreshToken) {
-                    throw new Error("No refresh token available");
-                }
+                console.log('Refreshing access token...');
 
-                const response = await apiClient.post("/refresh-token", {
-                    refreshToken: this.currentRefreshToken,
-                });
+                // Gọi API refresh - refresh token tự động gửi qua cookie
+                // Không cần gửi refreshToken trong body nữa
+                const response = await axios.post(
+                    config.serverUrl + API_URL + "/refresh-token",
+                    {}, // Empty body - refresh token ở trong cookie
+                    {
+                        withCredentials: true, // Quan trọng: gửi cookie
+                        _skipAuthRefresh: true, // Flag để bỏ qua interceptor
+                    }
+                );
 
-                const { accessToken: newToken, refreshToken: newRefreshToken } =
-                    response.data.tokens;
+                const { accessToken: newToken } = response.data.tokens;
 
-                // Update tokens based on current session type
+                console.log('Access token refreshed successfully');
+
+                // Chỉ update access token, refresh token vẫn ở trong cookie
                 if (this.currentSessionType === "admin") {
                     this.adminToken = newToken;
-                    this.adminRefreshToken = newRefreshToken;
                     localStorage.setItem("admin_auth_token", newToken);
-                    localStorage.setItem(
-                        "admin_refresh_token",
-                        newRefreshToken
-                    );
                 } else {
                     this.userToken = newToken;
-                    this.userRefreshToken = newRefreshToken;
                     localStorage.setItem("auth_token", newToken);
-                    localStorage.setItem("refresh_token", newRefreshToken);
                 }
 
-                // Update current pointers
+                // Update current pointer
                 this.token = newToken;
-                this.currentRefreshToken = newRefreshToken;
 
                 // Update interceptors with new token
                 this.updateInterceptors(newToken);
 
+                // Update token expiration time
+                const decoded = this.decodeToken(newToken);
+                if (decoded && decoded.exp) {
+                    this.tokenExpiresAt = decoded.exp * 1000;
+                }
+
                 resolve(newToken);
             } catch (error) {
                 console.error("Token refresh failed:", error);
-                // Clear tokens on refresh failure
-                if (this.currentSessionType === "admin") {
-                    this.adminToken = null;
-                    this.adminRefreshToken = null;
-                    localStorage.removeItem("admin_auth_token");
-                    localStorage.removeItem("admin_refresh_token");
-                } else {
-                    this.userToken = null;
-                    this.userRefreshToken = null;
-                    localStorage.removeItem("auth_token");
-                    localStorage.removeItem("refresh_token");
+                
+                // Chỉ clear tokens nếu refresh thất bại vì token không hợp lệ
+                // Không clear nếu chỉ là lỗi network
+                if (error.response?.status === 401 || error.response?.status === 403) {
+                    console.log('Refresh token invalid or expired, clearing session and logging out');
+                    this.clearCurrentSessionTokens();
+                    
+                    // Redirect về trang login ngay
+                    const isAdmin = this.currentSessionType === 'admin';
+                    window.location.href = isAdmin ? '/admin/login' : '/login';
                 }
-                this.token = null;
-                this.currentRefreshToken = null;
+                
                 reject(error);
             } finally {
+                this.isRefreshing = false;
                 this.tokenRefreshPromise = null;
             }
         });
@@ -502,32 +645,107 @@ class AuthService {
     // Tự động refresh khi có tương tác nếu sắp hết hạn
     initializeActivityRefresh() {
         const activityHandler = () => this.maybeRefreshOnActivity();
-        [
-            "click",
-            "keydown",
-            "mousemove",
+        
+        // Các sự kiện cho thấy user đang active
+        const activityEvents = [
+            "mousedown",
+            "keydown", 
             "scroll",
             "touchstart",
-            "visibilitychange",
-        ].forEach((evt) => window.addEventListener(evt, activityHandler));
+            "click",
+            "mousemove"
+        ];
+        
+        activityEvents.forEach((evt) => 
+            window.addEventListener(evt, activityHandler, { passive: true })
+        );
+        
+        // Visibility change - khi user quay lại tab
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.maybeRefreshOnActivity();
+            }
+        });
     }
 
     maybeRefreshOnActivity() {
-        // Debounce để tránh gọi liên tục: tối đa 1 lần mỗi 60s
         const now = Date.now();
-        if (now - this.lastActivityRefreshTime < 60000) return;
+        
+        // Debounce: chỉ check tối đa mỗi 30 giây
+        if (now - this.lastActivityRefreshTime < this.activityCheckInterval) {
+            return;
+        }
+        
         this.lastActivityRefreshTime = now;
 
-        // Chỉ xử lý nếu có token và có thời điểm hết hạn
-        if (!this.token || !this.tokenExpiresAt) return;
-
-        // Nếu token còn < 6 phút sẽ hết hạn, refresh ngay
-        const timeLeft = this.tokenExpiresAt - now;
-        if (timeLeft <= 360000) {
-            this.refreshToken().catch((e) =>
-                console.error("Activity-triggered refresh failed:", e)
-            );
+        // Không có token thì bỏ qua
+        if (!this.token) {
+            return;
         }
+
+        const timeRemaining = this.getTokenTimeRemaining(this.token);
+        
+        // Nếu access token hết hạn hoàn toàn
+        if (timeRemaining <= 0) {
+            console.warn('Access token expired on activity check');
+            // Thử refresh - backend sẽ kiểm tra refresh token cookie
+            console.log('Attempting to refresh...');
+            this.refreshToken().catch((e) => {
+                console.error("Activity-triggered refresh failed:", e);
+                // Error đã được xử lý trong refreshToken()
+            });
+            return;
+        }
+        
+        // Nếu access token còn ít hơn 3 phút, refresh ngay
+        if (timeRemaining <= this.refreshThreshold) {
+            console.log(`Activity detected with ${Math.floor(timeRemaining / 60000)} minutes remaining, refreshing...`);
+            this.refreshToken().catch((e) => {
+                console.error("Activity-triggered refresh failed:", e);
+            });
+        }
+    }
+
+    // Kiểm tra định kỳ token (mỗi 1 phút)
+    startPeriodicTokenCheck() {
+        // Clear existing interval nếu có
+        if (this.tokenCheckInterval) {
+            clearInterval(this.tokenCheckInterval);
+        }
+
+        this.tokenCheckInterval = setInterval(() => {
+            if (!this.token) {
+                return;
+            }
+
+            const timeRemaining = this.getTokenTimeRemaining(this.token);
+            const minutesRemaining = Math.floor(timeRemaining / 60000);
+            
+            // Log để debug
+            if (minutesRemaining <= 15) {
+                console.log(`Periodic check: Access token expires in ${minutesRemaining} minutes`);
+            }
+
+            // Access token hết hạn
+            if (timeRemaining <= 0) {
+                console.warn('Access token expired on periodic check');
+                // Thử refresh - backend sẽ kiểm tra refresh token cookie
+                console.log('Attempting to refresh...');
+                this.refreshToken().catch((e) => {
+                    console.error("Periodic refresh failed:", e);
+                    // Error đã được xử lý trong refreshToken()
+                });
+                return;
+            }
+
+            // Access token sắp hết hạn - refresh
+            if (timeRemaining <= this.refreshThreshold && !this.isRefreshing) {
+                console.log('Periodic check: Access token expiring soon, refreshing...');
+                this.refreshToken().catch((e) => {
+                    console.error("Periodic refresh failed:", e);
+                });
+            }
+        }, 1 * 60 * 1000); // Check mỗi 1 phút
     }
 
     // ===========================
@@ -560,33 +778,39 @@ class AuthService {
     // Hàm đăng nhập với phân biệt admin/user
     async login(credentials, sessionType = "user") {
         try {
-            const response = await apiClient.post("/login", credentials);
+            const response = await apiClient.post("/login", credentials, {
+                withCredentials: true, // Quan trọng: để nhận cookie từ server
+            });
             const data = response.data;
 
             const token = data?.tokens?.accessToken;
-            const refreshToken = data?.tokens?.refreshToken;
+            // Refresh token không còn trong response, nó đã được lưu vào cookie
             const user = data?.user;
 
-            // Lưu vào session tương ứng
+            // Lưu vào session tương ứng (chỉ access token)
             if (sessionType === "admin") {
                 this.adminToken = token;
-                this.adminRefreshToken = refreshToken;
                 this.adminUser = user;
                 localStorage.setItem("admin_auth_token", token);
-                localStorage.setItem("admin_refresh_token", refreshToken);
                 localStorage.setItem("admin_user", JSON.stringify(user));
             } else {
                 this.userToken = token;
-                this.userRefreshToken = refreshToken;
                 this.userUser = user;
                 localStorage.setItem("auth_token", token);
-                localStorage.setItem("refresh_token", refreshToken);
                 localStorage.setItem("user", JSON.stringify(user));
             }
 
             // Chuyển sang session vừa đăng nhập
             this.switchToSession(sessionType);
 
+            // Set token expiration time từ decoded token
+            const decoded = this.decodeToken(token);
+            if (decoded && decoded.exp) {
+                this.tokenExpiresAt = decoded.exp * 1000;
+                console.log(`Access token expires at: ${new Date(this.tokenExpiresAt).toLocaleString()}`);
+            }
+
+            // Schedule automatic refresh nếu có expiresIn
             if (data.expiresIn) {
                 this.scheduleTokenRefresh(data.expiresIn);
             } else {
@@ -618,7 +842,6 @@ class AuthService {
     async logout() {
         try {
             // Chỉ gọi API logout nếu có token hợp lệ
-            // Nếu token hết hạn, không cần gọi API vì backend không track session
             const currentSession = this.getCurrentSession();
             if (currentSession.token) {
                 // Thêm flag để interceptor không retry
@@ -626,29 +849,25 @@ class AuthService {
                     "/logout",
                     {},
                     {
+                        withCredentials: true, // Quan trọng: để xóa cookie
                         _skipAuthRefresh: true, // Custom flag để bỏ qua refresh token
                     }
                 );
             }
         } catch (error) {
             // Bỏ qua lỗi logout API, vẫn xóa local session
-            // Debug log intentionally removed to reduce console noise
         }
 
         // Luôn xóa session local dù API có lỗi hay không
         if (this.currentSessionType === "admin") {
             this.adminToken = null;
-            this.adminRefreshToken = null;
             this.adminUser = null;
             localStorage.removeItem("admin_auth_token");
-            localStorage.removeItem("admin_refresh_token");
             localStorage.removeItem("admin_user");
         } else {
             this.userToken = null;
-            this.userRefreshToken = null;
             this.userUser = null;
             localStorage.removeItem("auth_token");
-            localStorage.removeItem("refresh_token");
             localStorage.removeItem("user");
         }
 

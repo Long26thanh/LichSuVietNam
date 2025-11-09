@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import articleService from "@/services/articleService";
 import { recordWebsiteView, recordArticleView } from "@/services/viewService";
 import { useAuth } from "@/contexts/AuthContext";
+import { convertImagesToAbsoluteUrls } from "@/utils";
+import config from "@/config";
 import NotFound from "@/pages/404/404";
 import routes from "@/config/routes";
 import { CommentSection } from "@/components";
@@ -16,12 +18,15 @@ const ArticleDetail = () => {
     const [item, setItem] = useState(state?.article || null);
     const [loading, setLoading] = useState(!state?.article);
     const [error, setError] = useState(null);
+    const viewRecorded = useRef(false); // Để chỉ ghi nhận view 1 lần
 
     useEffect(() => {
-        if (item) return;
+        // Luôn fetch dữ liệu mới khi id thay đổi hoặc component mount
+        // State chỉ dùng để hiển thị tạm thời, nhưng vẫn cập nhật từ server
         const fetchDetail = async () => {
             try {
-                setLoading(true);
+                // Chỉ hiển thị loading nếu chưa có dữ liệu tạm từ state
+                if (!item) setLoading(true);
 
                 // Kiểm tra xem có phải admin session không
                 const isAdmin =
@@ -33,6 +38,7 @@ const ArticleDetail = () => {
 
                 if (res?.success && res.data) {
                     setItem(res.data);
+                    setError(null);
                 } else {
                     // Nếu không phải bài đã xuất bản, kiểm tra quyền xem
                     if (user) {
@@ -45,6 +51,7 @@ const ArticleDetail = () => {
                                 // Kiểm tra quyền: admin (trong session admin) hoặc tác giả
                                 if (isAdmin || article.authorId === user?.id) {
                                     setItem(article);
+                                    setError(null);
                                 } else {
                                     setError("404");
                                 }
@@ -94,11 +101,12 @@ const ArticleDetail = () => {
             }
         };
         fetchDetail();
-    }, [id, item, user, isAdminSession]);
+    }, [id, user, isAdminSession]); // Bỏ 'item' khỏi dependencies để tránh vòng lặp vô hạn
 
-    // Ghi nhận lượt xem
+    // Ghi nhận lượt xem - chỉ 1 lần
     useEffect(() => {
-        if (item && item.id) {
+        if (item && item.id && !viewRecorded.current) {
+            viewRecorded.current = true;
             // Ghi nhận lượt xem website
             recordWebsiteView();
             // Ghi nhận lượt xem bài viết
@@ -190,6 +198,23 @@ const ArticleDetail = () => {
     if (!item)
         return <div className="article-detail-page">Không có dữ liệu</div>;
 
+    // Helper function to get full image URL
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        
+        // If already a full URL (http/https) or data URL, return as is
+        if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+            return imagePath;
+        }
+        
+        // If it's a relative path, prepend server URL
+        if (imagePath.startsWith('/assets/images/')) {
+            return `${config.serverUrl}${imagePath}`;
+        }
+        
+        return imagePath;
+    };
+
     // Kiểm tra xem có hiển thị nút duyệt/từ chối không
     const isAdmin =
         isAdminSession && (user?.role === "admin" || user?.role === "sa");
@@ -243,7 +268,7 @@ const ArticleDetail = () => {
 
             {item.coverImage && (
                 <div className="article-cover-image">
-                    <img src={item.coverImage} alt={item.title} />
+                    <img src={getImageUrl(item.coverImage)} alt={item.title} />
                 </div>
             )}
 
@@ -251,7 +276,7 @@ const ArticleDetail = () => {
                 <section className="article-section">
                     <div
                         className="section-content"
-                        dangerouslySetInnerHTML={{ __html: item.content }}
+                        dangerouslySetInnerHTML={{ __html: convertImagesToAbsoluteUrls(item.content) }}
                     />
                 </section>
 

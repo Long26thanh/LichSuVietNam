@@ -61,6 +61,8 @@
 .form-group label {
     font-weight: 600;
     color: #374151;
+    display: block;
+    margin-bottom: 6px;
 }
 
 .form-group input,
@@ -80,14 +82,34 @@
 }
 
 .form-group textarea {
-    padding: 8px 10px;
+    padding: 10px 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     resize: vertical;
+    font-size: 0.95rem;
+    line-height: 1.4;
 }
 
 .form-group--full {
     grid-column: 1 / -1;
+    margin-top: 0.75rem;
+}
+
+/* Row wrapper for address / bio blocks to control spacing */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* Make full-width textareas more comfortable */
+.form-group--full textarea {
+    min-height: 120px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #fff;
 }
 
 .error-text {

@@ -396,5 +396,60 @@ class Comment {
             throw error;
         }
     }
+
+    // Thống kê chi tiết bình luận theo ngày/tháng/năm
+    static async getDetailedStatsByPeriod(startDate, endDate, period = "day") {
+        try {
+            let dateFormat;
+            switch (period) {
+                case "day":
+                    dateFormat = "YYYY-MM-DD";
+                    break;
+                case "week":
+                    dateFormat = "IYYY-IW";
+                    break;
+                case "month":
+                    dateFormat = "YYYY-MM";
+                    break;
+                case "year":
+                    dateFormat = "YYYY";
+                    break;
+                default:
+                    dateFormat = "YYYY-MM-DD";
+            }
+
+            const result = await query(
+                `SELECT 
+                    TO_CHAR("comment_at", '${dateFormat}') as period,
+                    COUNT(*) as total,
+                    COUNT(DISTINCT "user_id") as unique_users,
+                    COUNT(CASE WHEN "LoaiTrang" = 'Bài viết' THEN 1 END) as article_comments
+                FROM "BinhLuan"
+                WHERE "comment_at" BETWEEN $1 AND $2
+                GROUP BY period
+                ORDER BY period ASC`,
+                [startDate, endDate]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error("Error getting detailed comment stats by period:", error);
+            throw error;
+        }
+    }
+
+    // Đếm bình luận trong khoảng thời gian
+    static async countByDateRange(startDate, endDate) {
+        try {
+            const result = await query(
+                `SELECT COUNT(*) as count FROM "BinhLuan" 
+                WHERE "comment_at" BETWEEN $1 AND $2`,
+                [startDate, endDate]
+            );
+            return parseInt(result.rows[0].count, 10);
+        } catch (error) {
+            console.error("Error counting comments by date range:", error);
+            throw error;
+        }
+    }
 }
 export default Comment;

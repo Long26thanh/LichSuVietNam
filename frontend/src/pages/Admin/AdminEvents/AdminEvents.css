@@ -119,10 +119,11 @@
     gap: 4px;
 }
 
-.event-name {
+.events-management .event-name {
     font-weight: 600;
     color: #333;
     font-size: 14px;
+    margin: 0;
 }
 
 /* Row Actions */

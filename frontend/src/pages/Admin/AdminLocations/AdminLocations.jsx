@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, LocationForm, ConfirmDialog } from "@/components";
 import locationService from "@/services/locationService";
+import { locationsStat, edit, trash, search } from "@/assets/icons";
+import "../AdminCommon.css";
 import "./AdminLocations.css";
 
 const defaultFilters = { q: "" };
@@ -170,8 +172,11 @@ const AdminLocations = () => {
 
     return (
         <div className="locations-management">
-            <div className="page-header">
-                <h1>Quản lý địa điểm</h1>
+            <div className="admin-page-header locations">
+                <h1>
+                    <img src={locationsStat} alt="" className="header-icon" />
+                    Quản lý địa điểm
+                </h1>
                 <p>Quản lý các địa điểm lịch sử trong hệ thống</p>
             </div>
 
@@ -232,7 +237,7 @@ const AdminLocations = () => {
                                 <tr>
                                     <th>Tên địa điểm</th>
                                     <th>Vị trí</th>
-                                    <th>Tóm tắt</th>
+                                    <th>Mô tả</th>
                                     <th>Ngày tạo</th>
                                     <th>Hành động</th>
                                 </tr>
@@ -284,10 +289,12 @@ const AdminLocations = () => {
                                                 </div>
                                             </td>
                                             <td className="summary-cell">
-                                                <div className="location-summary">
-                                                    {location.summary ||
-                                                        "Không có tóm tắt"}
-                                                </div>
+                                                <div 
+                                                    className="location-summary"
+                                                    dangerouslySetInnerHTML={{ 
+                                                        __html: location.description || "Không có mô tả" 
+                                                    }}
+                                                />
                                             </td>
                                             <td>
                                                 {location.created_at

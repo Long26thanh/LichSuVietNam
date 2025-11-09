@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Search from "@/components/Search/Search";
 import LocationCard from "@/components/Card/LocationCard/LocationCard";
 import locationService from "@/services/locationService";
+import locationTypeService from "@/services/locationTypeService";
 import { recordWebsiteView } from "@/services/viewService";
 import "./Location.css";
 
@@ -20,11 +21,35 @@ const Location = () => {
     const [total, setTotal] = useState(0);
     const debounceRef = useRef(null);
     const abortRef = useRef(null);
-    const [locationTypes, setLocationTypes] = useState(["all"]);
+    const [locationTypes, setLocationTypes] = useState([]);
+    const [locationTypesMap, setLocationTypesMap] = useState({}); // Map ID -> Tên
 
     // Track website view
     useEffect(() => {
         recordWebsiteView();
+    }, []);
+
+    // Load danh sách loại địa danh
+    useEffect(() => {
+        const loadLocationTypes = async () => {
+            try {
+                const response = await locationTypeService.getAllTypes();
+                if (response?.success && response.data) {
+                    const types = response.data;
+                    setLocationTypes([{ id: "all", name: "Tất cả" }, ...types]);
+                    
+                    // Tạo map ID -> Tên để dễ tra cứu
+                    const typeMap = {};
+                    types.forEach(type => {
+                        typeMap[type.id] = type.name;
+                    });
+                    setLocationTypesMap(typeMap);
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải danh sách loại địa danh:", error);
+            }
+        };
+        loadLocationTypes();
     }, []);
 
     // Lấy dữ liệu từ API khi component được mount
@@ -47,7 +72,7 @@ const Location = () => {
                     page,
                     limit,
                     search: searchTerm,
-                    type: selectedType,
+                    type: selectedType === "all" ? "" : selectedType, // Gửi empty string nếu "all"
                     signal: controller.signal,
                 });
                 if (!response.success) {
@@ -93,25 +118,9 @@ const Location = () => {
     // Cập nhật danh sách hiển thị từ kết quả server
     useEffect(() => {
         setFilteredLocations(locations);
-        setShowResultsInfo(searchTerm !== "" || selectedType !== "all");
+        // Chỉ hiện số lượng khi có từ khóa tìm kiếm, không hiện khi chỉ lọc theo loại
+        setShowResultsInfo(searchTerm !== "");
     }, [locations, searchTerm, selectedType]);
-
-    // Cập nhật danh sách loại địa danh khi không áp dụng filter theo loại
-    useEffect(() => {
-        if (selectedType === "all" && Array.isArray(locations)) {
-            const types = [
-                "all",
-                ...Array.from(
-                    new Set(
-                        locations
-                            .map((l) => l.location_type)
-                            .filter((t) => t && typeof t === "string")
-                    )
-                ),
-            ];
-            setLocationTypes(types);
-        }
-    }, [locations, selectedType]);
 
     const handleSearch = (term) => {
         setSearchTerm(term);
@@ -179,7 +188,7 @@ const Location = () => {
                         >
                             <span>Tìm thấy</span>
                             <span className="count">
-                                {filteredLocations.length}
+                                {total}
                             </span>
                             <span>địa danh</span>
                             <button
@@ -198,13 +207,13 @@ const Location = () => {
                     <div className="filter-buttons">
                         {locationTypes.map((type) => (
                             <button
-                                key={type}
+                                key={type.id}
                                 className={`filter-btn ${
-                                    selectedType === type ? "active" : ""
+                                    selectedType === type.id ? "active" : ""
                                 }`}
-                                onClick={() => handleTypeFilter(type)}
+                                onClick={() => handleTypeFilter(type.id)}
                             >
-                                {type === "all" ? "Tất cả" : type}
+                                {type.name}
                             </button>
                         ))}
                     </div>

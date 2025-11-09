@@ -3,6 +3,7 @@ import RecentActivity from "@/components/Admin/RecentActivity/RecentActivity";
 import QuickActions from "@/components/Admin/QuickActions/QuickActions";
 import PendingArticles from "@/components/Admin/PendingArticles/PendingArticles";
 import StatsCards from "@/components/Admin/StatsCards/StatsCards";
+import { DashboardCharts, MonthlyReport } from "@/components/Admin";
 import { statsService } from "@/services";
 import "./AdminDashboard.css";
 
@@ -43,14 +44,20 @@ const AdminDashboard = () => {
                 {/* Pending Articles Section */}
                 <PendingArticles />
 
-                <div className="dashboard-main">
+                {/* Dashboard Charts - Thống kê chi tiết theo ngày/tháng/năm */}
+                <DashboardCharts />
+
+                {/* Monthly Report - Báo cáo theo tháng */}
+                <MonthlyReport />
+
+                {/* <div className="dashboard-main">
                     <div className="dashboard-left">
                         <RecentActivity />
                     </div>
                     <div className="dashboard-right">
                         <QuickActions />
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

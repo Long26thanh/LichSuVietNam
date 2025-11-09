@@ -64,6 +64,12 @@
     flex-shrink: 0;
 }
 
+.action-icon img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
 .action-content {
     flex: 1;
     min-width: 0;
@@ -88,11 +94,25 @@
     font-size: 1.2rem;
     transition: transform 0.2s;
     flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-arrow img {
+    width: 12px;
+    height: 12px;
+    transform: rotate(-90deg);
 }
 
 .action-card:hover .action-arrow {
     transform: translateX(4px);
-    color: var(--action-color);
+}
+
+.action-card:hover .action-arrow img {
+    filter: brightness(0) saturate(100%);
 }
 
 /* Responsive */

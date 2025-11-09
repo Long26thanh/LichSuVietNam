@@ -16,27 +16,30 @@ function EventCard({ event, viewCount = 0, commentCount = 0 }) {
     return (
         <div className={styles["event-card"]} onClick={handleCardClick}>
             <div className={styles["event-card-header"]}>
-                <h3 className={styles["event-title"]}>{event.name}</h3>
-                <span className={styles["event-date"]}>
-                    {formatShortDateRange(
-                        {
-                            day: event.startDate,
-                            month: event.startMonth,
-                            year: event.startYear,
-                        },
-                        {
-                            day: event.endDate,
-                            month: event.endMonth,
-                            year: event.endYear,
-                        }
-                    )}
-                </span>
+                <div className={styles["event-header-content"]}>
+                    <h3 className={styles["event-title"]}>{event.name}</h3>
+                    <span className={styles["event-date"]}>
+                        {formatShortDateRange(
+                            {
+                                day: event.startDate,
+                                month: event.startMonth,
+                                year: event.startYear,
+                            },
+                            {
+                                day: event.endDate,
+                                month: event.endMonth,
+                                year: event.endYear,
+                            }
+                        )}
+                    </span>
+                </div>
             </div>
             <div className={styles["event-card-content"]}>
                 {event.summary && (
-                    <p className={styles["event-description"]}>
-                        {event.summary}
-                    </p>
+                    <div 
+                        className={styles["event-description"]}
+                        dangerouslySetInnerHTML={{ __html: event.summary }}
+                    />
                 )}
                 {event.location && (
                     <div className={styles["event-location"]}>

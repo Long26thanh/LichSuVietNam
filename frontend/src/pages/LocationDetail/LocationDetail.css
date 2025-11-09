@@ -42,7 +42,6 @@
 .loc-detail-content {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 1.25rem 1.25rem 1rem 1.25rem;
 }
 
 .loc-section {
@@ -82,6 +81,67 @@
 .info-list strong { color: #4a5568; }
 
 .section-content { color: #4a5568; line-height: 1.75; }
+
+.section-content b,
+.section-content strong {
+    font-weight: 700 !important;
+}
+
+.section-content i,
+.section-content em {
+    font-style: italic !important;
+}
+
+.section-content u {
+    text-decoration: underline !important;
+}
+
+.section-content s,
+.section-content strike,
+.section-content del {
+    text-decoration: line-through !important;
+}
+
+/* List styling for content */
+.section-content ul,
+.section-content ol {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    list-style-position: outside;
+}
+
+.section-content ul {
+    list-style-type: disc;
+}
+
+.section-content ol {
+    list-style-type: decimal;
+}
+
+.section-content li {
+    margin-bottom: 0.5rem;
+    display: list-item;
+}
+
+.section-content ul ul {
+    list-style-type: circle;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.section-content ul ul ul {
+    list-style-type: square;
+}
+
+.section-content ol ol {
+    list-style-type: lower-alpha;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.section-content ol ol ol {
+    list-style-type: lower-roman;
+}
 
 @media (max-width: 768px) {
     .loc-detail-header { padding: 4rem 1rem 2rem 1rem; }

@@ -1,14 +1,8 @@
-import axios from "axios";
-import config from "../config";
+import { createApiClient } from "./apiClient";
+
 const API_URL = "/api/preview";
 
-const apiClient = axios.create({
-    baseURL: config.serverUrl + API_URL,
-    timeout: 10000,
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
+const apiClient = createApiClient(API_URL);
 
 class PreviewService {
     async previewPeriod(id) {

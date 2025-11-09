@@ -1,30 +1,7 @@
-import axios from "axios";
-import config from "../config";
+import { createApiClient } from "./apiClient";
 
 const API_URL = "/api/events";
-
-const apiClient = axios.create({
-    baseURL: config.serverUrl + API_URL,
-    timeout: 10000,
-});
-
-apiClient.interceptors.request.use(
-    (config) => {
-        let token = null;
-        if (localStorage.getItem("session_type") === "admin") {
-            token = localStorage.getItem("admin_auth_token");
-        } else {
-            token = localStorage.getItem("auth_token");
-        }
-        if (token) {
-            config.headers["Authorization"] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
+const apiClient = createApiClient(API_URL);
 
 class EventService {
     async getAllEvents({ page = 1, limit = 12, search = "", signal } = {}) {

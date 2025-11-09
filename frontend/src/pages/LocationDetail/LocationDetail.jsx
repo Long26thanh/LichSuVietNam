@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import locationService from "@/services/locationService";
 import { recordWebsiteView, recordLocationView } from "@/services/viewService";
-import { CommentSection } from "@/components";
+import { convertImagesToAbsoluteUrls } from "@/utils";
+import { CommentSection, LocationMap } from "@/components";
 import "./LocationDetail.css";
 
 const LocationDetail = () => {
@@ -14,13 +15,17 @@ const LocationDetail = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (item) return; // đã có từ state
+        // Luôn fetch dữ liệu mới khi id thay đổi hoặc component mount
+        // State chỉ dùng để hiển thị tạm thời, nhưng vẫn cập nhật từ server
         const fetchDetail = async () => {
             try {
-                setLoading(true);
+                // Chỉ hiển thị loading nếu chưa có dữ liệu tạm từ state
+                if (!item) setLoading(true);
+                
                 const res = await locationService.getLocationById(id);
                 if (res?.success && res.data) {
                     setItem(res.data);
+                    setError(null);
                 } else {
                     setError("Không tìm thấy địa danh");
                 }
@@ -89,16 +94,33 @@ const LocationDetail = () => {
                 {item.description && (
                     <section className="loc-section">
                         <h2 className="section-title">Mô tả</h2>
-                        <div className="section-content">
-                            {item.description}
-                        </div>
+                        <div 
+                            className="section-content"
+                            dangerouslySetInnerHTML={{ __html: convertImagesToAbsoluteUrls(item.description) }}
+                        />
                     </section>
                 )}
 
                 {item.detail && (
                     <section className="loc-section">
                         <h2 className="section-title">Chi tiết</h2>
-                        <div className="section-content">{item.detail}</div>
+                        <div 
+                            className="section-content"
+                            dangerouslySetInnerHTML={{ __html: convertImagesToAbsoluteUrls(item.detail) }}
+                        />
+                    </section>
+                )}
+
+                {/* Map Section - Show if coordinates are available */}
+                {item.latitude && item.longitude && (
+                    <section className="loc-section">
+                        <h2 className="section-title">Vị trí trên bản đồ</h2>
+                        <LocationMap
+                            latitude={item.latitude}
+                            longitude={item.longitude}
+                            name={item.name}
+                            description={item.description}
+                        />
                     </section>
                 )}
             </main>

@@ -1,11 +1,12 @@
 import express from "express";
 import ViewController from "../controllers/ViewController.js";
-import { authenticateToken } from "../middlewares/auth.js";
+import { authenticateToken, optionalAuth } from "../middlewares/auth.js";
 
 const router = express.Router();
 
 // Ghi nhận lượt xem (có thể gọi với hoặc không có authentication)
-router.post("/record", ViewController.recordView);
+// optionalAuth sẽ populate req.user nếu có token, không có thì req.user = null
+router.post("/record", optionalAuth, ViewController.recordView);
 
 // Lấy thống kê lượt xem theo thời gian (phải đặt trước route động)
 router.get("/:loaiTrang/:id/stats", ViewController.getViewStats);

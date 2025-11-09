@@ -17,6 +17,7 @@ export { default as UserArticles } from "./UserArticles/UserArticles";
 // Admin pages
 export { default as Admin } from "./Admin/Admin";
 export { default as AdminDashboard } from "./Admin/AdminDashboard/AdminDashboard";
+export { default as AdminReportPrint } from "./Admin/ReportPrint/ReportPrint";
 export { default as AdminUsers } from "./Admin/AdminUsers/AdminUsers";
 export { default as AdminEvents } from "./Admin/AdminEvents/AdminEvents";
 export { default as AdminFigures } from "./Admin/AdminFigures/AdminFigures";
@@ -24,3 +25,4 @@ export { default as AdminLocations } from "./Admin/AdminLocations/AdminLocations
 export { default as AdminPeriods } from "./Admin/AdminPeriods/AdminPeriods";
 export { default as AdminArticles } from "./Admin/AdminArticles/AdminArticles";
 export { default as AdminProfile } from "./Admin/AdminProfile/AdminProfile";
+

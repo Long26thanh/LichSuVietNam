@@ -145,6 +145,7 @@ export const optionalAuth = async (req, res, next) => {
         } else {
             req.user = null;
         }
+        next();
     } catch (error) {
         req.user = null;
         next();
@@ -154,29 +155,20 @@ export const optionalAuth = async (req, res, next) => {
 export const generateTokens = (userId) => {
     const { jwtSecret, jwtRefresh } = getServerConfig();
     const accessToken = jwt.sign({ id: userId }, jwtSecret, {
-        expiresIn: "1h", // Increased from 15m to 1h
+        expiresIn: "5m",
     });
     const refreshToken = jwt.sign({ id: userId, type: "refresh" }, jwtRefresh, {
-        expiresIn: "30d", // Increased from 7d to 30d
+        expiresIn: "7d", 
     });
 
     return { accessToken, refreshToken };
 };
 
-export const setTokensCookie = (res, tokens) => {
-    const isProduction = getServerConfig().nodeEnv;
-    res.cookie("accessToken", tokens.accessToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: "Lax",
-        maxAge: 60 * 60 * 1000, // 1 hour
-        path: "/",
+export const generateAccessToken = (userId) => {
+    const { jwtSecret } = getServerConfig();
+    const accessToken = jwt.sign({ id: userId }, jwtSecret, {
+        expiresIn: "5m", 
     });
-    res.cookie("refreshToken", tokens.refreshToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: "Lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        path: "/",
-    });
+
+    return accessToken;
 };

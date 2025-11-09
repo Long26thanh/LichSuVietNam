@@ -72,7 +72,11 @@ function TimeLineCard({ period, isLeft = false, commentCount = 0 }) {
             } ${isVisible ? styles["animate-in"] : ""}`}
         >
             <div className={styles["timeline-card"]} onClick={handleClick}>
-                <div className={styles["timeline-card-header"]}></div>
+                <div className={styles["timeline-card-header"]}>
+                    <h3 className={styles["timeline-card-name"]}>
+                        {period.name || "Thời kỳ lịch sử"}
+                    </h3>
+                </div>
                 <div className={styles["timeline-card-title"]}>
                     <div className={styles["timeline-card-years"]}>
                         {formatPeriod(period)}

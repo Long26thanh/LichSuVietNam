@@ -111,19 +111,74 @@
     margin-top: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.location-description p {
     font-size: 0.9rem;
     color: #4a5568;
     line-height: 1.6;
-    margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-height: calc(1rem * 1.7 * 3);
+    max-height: calc(1rem * 1.7 * 3);
+}
+
+/* Handle HTML formatting from text editor */
+.location-description p {
+    margin: 0;
+    display: inline;
+}
+
+.location-description strong,
+.location-description b {
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.location-description em,
+.location-description i {
+    font-style: italic;
+}
+
+.location-description u {
+    text-decoration: underline;
+}
+
+.location-description s,
+.location-description strike {
+    text-decoration: line-through;
+}
+
+.location-description ul,
+.location-description ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    display: inline;
+}
+
+.location-description li {
+    display: inline;
+}
+
+.location-description li:not(:last-child)::after {
+    content: ", ";
+}
+
+.location-description br {
+    display: none;
+}
+
+.location-description h1,
+.location-description h2,
+.location-description h3,
+.location-description h4,
+.location-description h5,
+.location-description h6 {
+    font-size: inherit;
+    font-weight: 700;
+    margin: 0;
+    display: inline;
 }
 
 .location-coordinates {

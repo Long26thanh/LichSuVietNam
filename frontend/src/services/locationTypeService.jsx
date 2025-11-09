@@ -1,15 +1,7 @@
-import axios from "axios";
-import config from "../config";
+import { createApiClient } from "./apiClient";
 
 const API_URL = "/api/location-types";
-
-const apiClient = axios.create({
-    baseURL: config.serverUrl + API_URL,
-    timeout: 10000,
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
+const apiClient = createApiClient(API_URL);
 
 class LocationTypeService {
     async getAllTypes() {

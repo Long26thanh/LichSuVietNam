@@ -24,3 +24,4 @@ export { default as FigureForm } from "./FigureForm/FigureForm";
 export { default as EventForm } from "./EventForm/EventForm";
 export { default as ArticleForm } from "./ArticleForm/ArticleForm";
 export { default as CommentSection } from "./CommentSection/CommentSection";
+export { default as LocationMap } from "./LocationMap/LocationMap";

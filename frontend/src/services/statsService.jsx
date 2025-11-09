@@ -1,32 +1,9 @@
-import axios from "axios";
-import config from "../config";
+import { createApiClient } from "./apiClient";
 
 const API_URL = "/api/stats";
 
 // Tạo instance axios với cấu hình cơ bản
-const apiClient = axios.create({
-    baseURL: config.serverUrl + API_URL,
-    timeout: 10000,
-});
-
-// Interceptor để tự động thêm token vào header
-apiClient.interceptors.request.use(
-    (config) => {
-        let token = null;
-        if (localStorage.getItem("session_type") === "admin") {
-            token = localStorage.getItem("admin_auth_token");
-        } else {
-            token = localStorage.getItem("auth_token");
-        }
-        if (token) {
-            config.headers["Authorization"] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
+const apiClient = createApiClient(API_URL);
 
 // Lấy thống kê tổng quan cho admin
 export const getAdminStats = async () => {
@@ -56,9 +33,67 @@ export const getStatsByDateRange = async (startDate, endDate, type) => {
     }
 };
 
+// Lấy thống kê Dashboard chi tiết theo ngày/tháng/năm
+export const getDashboardStats = async (period = "month", startDate = null, endDate = null) => {
+    try {
+        const params = { period };
+        if (startDate) params.startDate = startDate;
+        if (endDate) params.endDate = endDate;
+
+        const response = await apiClient.get("/dashboard", { params });
+        return response.data;
+    } catch (error) {
+        console.error("Error getting dashboard stats:", error);
+        throw error;
+    }
+};
+
+// Lấy thống kê theo tháng trong năm
+export const getMonthlyStats = async (year = new Date().getFullYear()) => {
+    try {
+        const response = await apiClient.get("/monthly", {
+            params: { year },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error getting monthly stats:", error);
+        throw error;
+    }
+};
+
+// Lấy thống kê theo ngày trong tháng
+export const getDailyStats = async (year, month) => {
+    try {
+        const response = await apiClient.get("/daily", {
+            params: { year, month },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error getting daily stats:", error);
+        throw error;
+    }
+};
+
+// Lấy danh sách chi tiết các bài viết/nội dung theo tháng
+export const getMonthlyDetailedContent = async (year, month, type = 'all') => {
+    try {
+        const response = await apiClient.get("/monthly-details", {
+            params: { year, month, type },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error getting monthly detailed content:", error);
+        throw error;
+    }
+};
+
 const statsService = {
     getAdminStats,
     getStatsByDateRange,
+    getDashboardStats,
+    getMonthlyStats,
+    getDailyStats,
+    getMonthlyDetailedContent,
 };
 
 export default statsService;

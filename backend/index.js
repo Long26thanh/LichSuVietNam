@@ -4,7 +4,12 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import routes from "./routes/index.js";
 import path from "path";
+import { fileURLToPath } from "url";
 import { testConnection } from "./config/db.js";
+import schedulerService from "./services/schedulerService.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Tải biến môi trường từ file .env
 dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
@@ -46,6 +51,9 @@ app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use(cookieParser());
 
+// Serve static images from frontend/src/assets/images
+app.use('/assets/images', express.static(path.join(__dirname, '../frontend/src/assets/images')));
+
 // Thêm error handler cho trường hợp payload quá lớn để trả về thông điệp rõ ràng
 app.use((err, req, res, next) => {
     if (err && err.type === "entity.too.large") {
@@ -70,6 +78,9 @@ const startServer = async () => {
             if (connected) {
                 app.listen(PORT, () => {
                     console.log(`Server đang chạy trên cổng ${PORT}`);
+                    
+                    // Khởi động scheduler để tự động xuất bản bài viết đã lên lịch
+                    schedulerService.start();
                 });
             } else {
                 console.error(

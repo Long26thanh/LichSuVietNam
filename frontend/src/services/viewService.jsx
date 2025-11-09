@@ -1,7 +1,9 @@
-import axios from "axios";
-import config from "../config";
+import { createApiClient } from "./apiClient";
 
-const API_BASE_URL = `${config.serverUrl}/api/views`;
+const API_URL = "/api/views";
+
+// Tạo axios instance với interceptor để gửi token
+const apiClient = createApiClient(API_URL);
 
 // Ghi nhận lượt xem
 export const recordView = async (loaiTrang, id = null) => {
@@ -29,7 +31,7 @@ export const recordView = async (loaiTrang, id = null) => {
             }
         }
 
-        const response = await axios.post(`${API_BASE_URL}/record`, data);
+        const response = await apiClient.post("/record", data);
         return response.data;
     } catch (error) {
         console.error("Error recording view:", error);
@@ -72,10 +74,10 @@ export const recordLocationView = async (locationId) => {
 export const getViewCount = async (loaiTrang, id = null) => {
     try {
         const url = id
-            ? `${API_BASE_URL}/${encodeURIComponent(loaiTrang)}/${id}`
-            : `${API_BASE_URL}/${encodeURIComponent(loaiTrang)}`;
+            ? `/${encodeURIComponent(loaiTrang)}/${id}`
+            : `/${encodeURIComponent(loaiTrang)}`;
 
-        const response = await axios.get(url);
+        const response = await apiClient.get(url);
         return response.data.data.count;
     } catch (error) {
         console.error("Error getting view count:", error);
@@ -86,8 +88,8 @@ export const getViewCount = async (loaiTrang, id = null) => {
 // Lấy số lượt xem cho nhiều items
 export const getMultipleViewCounts = async (loaiTrang, ids) => {
     try {
-        const response = await axios.post(
-            `${API_BASE_URL}/${encodeURIComponent(loaiTrang)}/multiple`,
+        const response = await apiClient.post(
+            `/${encodeURIComponent(loaiTrang)}/multiple`,
             { ids }
         );
         return response.data.data;
@@ -101,14 +103,10 @@ export const getMultipleViewCounts = async (loaiTrang, ids) => {
 export const getViewStats = async (loaiTrang, id = null, days = 7) => {
     try {
         const url = id
-            ? `${API_BASE_URL}/${encodeURIComponent(
-                  loaiTrang
-              )}/${id}/stats?days=${days}`
-            : `${API_BASE_URL}/${encodeURIComponent(
-                  loaiTrang
-              )}/0/stats?days=${days}`;
+            ? `/${encodeURIComponent(loaiTrang)}/${id}/stats?days=${days}`
+            : `/${encodeURIComponent(loaiTrang)}/0/stats?days=${days}`;
 
-        const response = await axios.get(url);
+        const response = await apiClient.get(url);
         return response.data.data;
     } catch (error) {
         console.error("Error getting view stats:", error);

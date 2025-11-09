@@ -2,6 +2,68 @@
  * Utility functions for handling image uploads and storage
  */
 
+import config from "@/config";
+
+/**
+ * Chuyển đổi đường dẫn ảnh thành URL đầy đủ
+ * @param {string} imagePath - Đường dẫn ảnh từ database
+ * @returns {string|null} - URL đầy đủ hoặc null
+ */
+export const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    
+    // If already a full URL (http/https) or data URL, return as is
+    if (imagePath.startsWith('http://') || 
+        imagePath.startsWith('https://') || 
+        imagePath.startsWith('data:')) {
+        return imagePath;
+    }
+    
+    // If it's a relative path from backend, prepend server URL
+    if (imagePath.startsWith('/assets/images/')) {
+        return `${config.serverUrl}${imagePath}`;
+    }
+    
+    // If it's any other relative path, prepend server URL
+    if (imagePath.startsWith('/')) {
+        return `${config.serverUrl}${imagePath}`;
+    }
+    
+    // Default case: return as is
+    return imagePath;
+};
+
+/**
+ * Kiểm tra xem URL ảnh có hợp lệ không
+ * @param {string} imageUrl - URL ảnh cần kiểm tra
+ * @returns {boolean}
+ */
+export const isValidImageUrl = (imageUrl) => {
+    if (!imageUrl || typeof imageUrl !== 'string') return false;
+    
+    // Check if it's a data URL
+    if (imageUrl.startsWith('data:image/')) return true;
+    
+    // Check if it's a valid HTTP(S) URL
+    try {
+        const url = new URL(imageUrl.startsWith('http') ? imageUrl : `${config.serverUrl}${imageUrl}`);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+        return false;
+    }
+};
+
+/**
+ * Lấy placeholder image URL
+ * @param {string} text - Text hiển thị trong placeholder
+ * @param {number} width - Chiều rộng
+ * @param {number} height - Chiều cao
+ * @returns {string}
+ */
+export const getPlaceholderUrl = (text = 'No Image', width = 400, height = 250) => {
+    return `https://via.placeholder.com/${width}x${height}/667eea/ffffff?text=${encodeURIComponent(text)}`;
+};
+
 /**
  * Save image to assets/images folder and return the relative path
  * @param {File} file - The image file to save
@@ -216,6 +278,28 @@ export const replaceBase64WithUrls = (htmlContent, replacementMap) => {
             url
         );
     }
+
+    return result;
+};
+
+/**
+ * Convert all relative image URLs in HTML to absolute URLs
+ * @param {string} htmlContent - HTML string with image tags
+ * @returns {string} - HTML with absolute image URLs
+ */
+export const convertImagesToAbsoluteUrls = (htmlContent) => {
+    if (!htmlContent) return htmlContent;
+
+    let result = htmlContent;
+    
+    // Find all img tags with relative src
+    const imgRegex = /<img([^>]*?)src="(\/assets\/images\/[^"]+)"([^>]*?)>/g;
+    
+    result = result.replace(imgRegex, (match, before, src, after) => {
+        // Convert relative URL to absolute URL
+        const absoluteUrl = `${config.serverUrl}${src}`;
+        return `<img${before}src="${absoluteUrl}"${after}>`;
+    });
 
     return result;
 };

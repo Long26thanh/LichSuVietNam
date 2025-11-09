@@ -154,6 +154,32 @@ class Figure {
             throw error;
         }
     }
+
+    // Lấy danh sách nhân vật theo khoảng thời gian
+    static async getByDateRange(startDate, endDate) {
+        try {
+            const result = await query(
+                `SELECT 
+                    nv."MaNhanVat" as id,
+                    nv."HoTen" as name,
+                    nv."ChucDanh" as title,
+                    nv."NgayTao" as created_date,
+                    COALESCE(COUNT(DISTINCT lx."MaLuotXem"), 0) as view_count,
+                    COALESCE(COUNT(DISTINCT bl."MaBinhLuan"), 0) as comment_count
+                FROM "NhanVat" nv
+                LEFT JOIN "LuotXem" lx ON nv."MaNhanVat" = lx."MaNhanVat" AND lx."LoaiTrang" = 'Nhân vật'
+                LEFT JOIN "BinhLuan" bl ON nv."MaNhanVat" = bl."MaNhanVat" AND bl."LoaiTrang" = 'Nhân vật'
+                WHERE nv."NgayTao" >= $1 AND nv."NgayTao" <= $2
+                GROUP BY nv."MaNhanVat", nv."HoTen", nv."ChucDanh", nv."NgayTao"
+                ORDER BY nv."NgayTao" DESC`,
+                [startDate, endDate]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error("Error getting figures by date range:", error);
+            throw error;
+        }
+    }
 }
 
 export default Figure;

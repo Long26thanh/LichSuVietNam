@@ -4,6 +4,13 @@ import { authenticateToken, requireAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
+// Public routes - MUST come before parameterized routes to prevent matching issues
+router.get("/published", ArticleController.getPublished);
+router.get("/published/:id", ArticleController.getPublishedById);
+
+// User-specific route - MUST come before /:id to prevent matching issues
+router.get("/my-articles", authenticateToken, ArticleController.getByAuthor);
+
 // Admin routes
 router.get("/", authenticateToken, requireAdmin, ArticleController.getAll);
 router.get("/:id", authenticateToken, requireAdmin, ArticleController.getById);
@@ -12,10 +19,5 @@ router.get("/:id", authenticateToken, requireAdmin, ArticleController.getById);
 router.post("/", authenticateToken, ArticleController.create);
 router.put("/:id", authenticateToken, ArticleController.update);
 router.delete("/:id", authenticateToken, ArticleController.delete);
-router.get("/my-articles", authenticateToken, ArticleController.getByAuthor);
-
-// Public routes
-router.get("/published", ArticleController.getPublished);
-router.get("/published/:id", ArticleController.getPublishedById);
 
 export default router;

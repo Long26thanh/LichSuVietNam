@@ -124,12 +124,12 @@ function Header() {
                                     label: "Bài viết của tôi",
                                     to: config.routes.userArticles,
                                 },
-                                {
-                                    key: "settings",
-                                    icon: icons.settings,
-                                    label: "Cài đặt",
-                                    to: "/settings",
-                                },
+                                // {
+                                //     key: "settings",
+                                //     icon: icons.settings,
+                                //     label: "Cài đặt",
+                                //     to: "/settings",
+                                // },
                                 { key: "divider-1", type: "divider" },
                                 {
                                     key: "logout",

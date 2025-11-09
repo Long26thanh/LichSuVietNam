@@ -5,6 +5,8 @@ import eventService from "@/services/eventService";
 import periodService from "@/services/periodService";
 import locationService from "@/services/locationService";
 import { formatShortDateRange } from "@/utils/dateUtils";
+import { eventsStat } from "@/assets/icons";
+import "../AdminCommon.css";
 import "./AdminEvents.css";
 
 const defaultFilters = { q: "" };
@@ -240,8 +242,11 @@ const AdminEvents = () => {
 
     return (
         <div className="events-management">
-            <div className="page-header">
-                <h1>Quản lý sự kiện</h1>
+            <div className="admin-page-header events">
+                <h1>
+                    <img src={eventsStat} alt="" className="header-icon" />
+                    Quản lý sự kiện
+                </h1>
                 <p>Quản lý các sự kiện lịch sử trong hệ thống</p>
             </div>
 

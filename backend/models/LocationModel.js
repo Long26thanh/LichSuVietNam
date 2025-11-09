@@ -10,7 +10,8 @@ class Location {
         this.detail = locationData?.ChiTiet;
         this.latitude = locationData?.ViDo;
         this.longitude = locationData?.KinhDo;
-        this.location_type_id = locationData?.LoaiDiaDanh;
+        this.location_type_id = locationData?.MaLoaiDiaDanh;
+        this.location_type = locationData?.TenLoaiDiaDanh; 
         this.created_at = locationData?.NgayTao;
         this.updated_at = locationData?.NgayCapNhat;
     }
@@ -48,10 +49,13 @@ class Location {
 
         // Lấy dữ liệu phân trang
         const result = await query(
-            `SELECT * 
-            FROM "DiaDanh" 
+            `SELECT 
+                d.*,
+                l."TenLoai" as "TenLoaiDiaDanh"
+            FROM "DiaDanh" d
+            LEFT JOIN "LoaiDiaDanh" l ON d."MaLoaiDiaDanh" = l."MaLoai"
             ${whereClause} 
-            ORDER BY "TenDiaDanh" ASC 
+            ORDER BY d."TenDiaDanh" ASC 
             LIMIT $${index} OFFSET $${index + 1}`,
             [...values, limit, offset]
         );
@@ -69,7 +73,12 @@ class Location {
 
     static async getById(id) {
         const result = await query(
-            `SELECT * FROM "DiaDanh" WHERE "MaDiaDanh" = $1`,
+            `SELECT 
+                d.*,
+                l."TenLoai" as "TenLoaiDiaDanh"
+            FROM "DiaDanh" d
+            LEFT JOIN "LoaiDiaDanh" l ON d."MaLoaiDiaDanh" = l."MaLoai"
+            WHERE d."MaDiaDanh" = $1`,
             [id]
         );
         const row = result.rows[0];
@@ -154,7 +163,7 @@ class Location {
                 latitude,
                 longitude,
                 locationData.location_type || null,
-                this.id,
+                id, // Sửa từ this.id thành id
             ]
         );
 
@@ -178,6 +187,31 @@ class Location {
             return parseInt(result.rows[0].count, 10);
         } catch (error) {
             console.error("Error counting locations:", error);
+            throw error;
+        }
+    }
+
+    // Lấy danh sách địa danh theo khoảng thời gian
+    static async getByDateRange(startDate, endDate) {
+        try {
+            const result = await query(
+                `SELECT 
+                    dd."MaDiaDanh" as id,
+                    dd."TenDiaDanh" as name,
+                    dd."NgayTao" as created_date,
+                    COALESCE(COUNT(DISTINCT lx."MaLuotXem"), 0) as view_count,
+                    COALESCE(COUNT(DISTINCT bl."MaBinhLuan"), 0) as comment_count
+                FROM "DiaDanh" dd
+                LEFT JOIN "LuotXem" lx ON dd."MaDiaDanh" = lx."MaDiaDanh" AND lx."LoaiTrang" = 'Địa danh'
+                LEFT JOIN "BinhLuan" bl ON dd."MaDiaDanh" = bl."MaDiaDanh" AND bl."LoaiTrang" = 'Địa danh'
+                WHERE dd."NgayTao" >= $1 AND dd."NgayTao" <= $2
+                GROUP BY dd."MaDiaDanh", dd."TenDiaDanh", dd."NgayTao"
+                ORDER BY dd."NgayTao" DESC`,
+                [startDate, endDate]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error("Error getting locations by date range:", error);
             throw error;
         }
     }

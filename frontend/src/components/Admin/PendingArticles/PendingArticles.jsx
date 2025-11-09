@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { articleService } from "@/services";
-import "./PendingArticles.css";
+import config from "@/config";
+import styles from "./PendingArticles.module.css";
+import * as icons from "@/assets/icons";
 
 const PendingArticles = () => {
     const [articles, setArticles] = useState([]);
@@ -95,13 +97,33 @@ const PendingArticles = () => {
             : text;
     };
 
+    // Helper function to get full image URL
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        
+        // If already a full URL (http/https) or data URL, return as is
+        if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+            return imagePath;
+        }
+        
+        // If it's a relative path, prepend server URL
+        if (imagePath.startsWith('/assets/images/')) {
+            return `${config.serverUrl}${imagePath}`;
+        }
+        
+        return imagePath;
+    };
+
     if (loading) {
         return (
-            <div className="pending-articles-card">
-                <div className="card-header">
-                    <h3>⏳ Bài viết chờ duyệt</h3>
+            <div className={styles["pending-articles-card"]}>
+                <div className={styles["card-header"]}>
+                    <h3>
+                        <img src={icons.clock} alt="" className={styles["title-icon"]} />
+                        Bài viết chờ duyệt
+                    </h3>
                 </div>
-                <div className="card-body loading">
+                <div className={`${styles["card-body"]} ${styles["loading"]}`}>
                     <p>Đang tải...</p>
                 </div>
             </div>
@@ -109,69 +131,78 @@ const PendingArticles = () => {
     }
 
     return (
-        <div className="pending-articles-card">
-            <div className="card-header">
-                <h3>⏳ Bài viết chờ duyệt</h3>
-                <span className="badge">{articles.length}</span>
+        <div className={styles["pending-articles-card"]}>
+            <div className={styles["card-header"]}>
+                <h3>
+                    <img src={icons.clock} alt="" className={styles["title-icon"]} />
+                    Bài viết chờ duyệt
+                </h3>
+                <span className={styles["badge"]}>{articles.length}</span>
             </div>
-            <div className="card-body">
+            <div className={styles["card-body"]}>
                 {articles.length === 0 ? (
-                    <div className="empty-state">
-                        <p>✅ Không có bài viết chờ duyệt</p>
+                    <div className={styles["empty-state"]}>
+                        <img src={icons.checkCircle} alt="" className={styles["empty-icon"]} />
+                        <p>Không có bài viết chờ duyệt</p>
                     </div>
                 ) : (
-                    <div className="articles-list">
+                    <div className={styles["articles-list"]}>
                         {articles.map((article) => (
-                            <div key={article.id} className="article-item">
+                            <div key={article.id} className={styles["article-item"]}>
                                 {article.coverImage && (
-                                    <div className="article-thumbnail">
+                                    <div className={styles["article-thumbnail"]}>
                                         <img
-                                            src={article.coverImage}
+                                            src={getImageUrl(article.coverImage)}
                                             alt={article.title}
                                         />
                                     </div>
                                 )}
-                                <div className="article-info">
-                                    <h4 className="article-title">
+                                <div className={styles["article-info"]}>
+                                    <h4 className={styles["article-title"]}>
                                         {article.title}
                                     </h4>
-                                    <p className="article-excerpt">
+                                    <p className={styles["article-excerpt"]}>
                                         {truncateText(
                                             article.excerpt || article.content
                                         )}
                                     </p>
-                                    <div className="article-meta">
-                                        <span className="author">
-                                            👤{" "}
+                                    <div className={styles["article-meta"]}>
+                                        <span className={styles["author"]}>
+                                            <img src={icons.user} alt="User" className={styles["meta-icon"]} />
                                             {article.authorName || "Người dùng"}
                                         </span>
-                                        <span className="date">
-                                            📅 {formatDate(article.createdAt)}
+                                        <span className={styles["date"]}>
+                                            <img src={icons.clock} alt="Time" className={styles["meta-icon"]} />
+                                            {formatDate(article.createdAt)}
                                         </span>
                                     </div>
-                                    <div className="article-actions">
+                                    <div className={styles["article-actions"]}>
                                         <button
-                                            className="btn-approve"
+                                            className={styles["btn-approve"]}
                                             onClick={() =>
                                                 handleApprove(article.id)
                                             }
                                             disabled={processing === article.id}
                                         >
-                                            {processing === article.id
-                                                ? "⏳"
-                                                : "✓"}{" "}
+                                            {processing === article.id ? (
+                                                <img src={icons.clock} alt="Processing" className={styles["btn-icon"]} />
+                                            ) : (
+                                                <img src={icons.check} alt="Approve" className={styles["btn-icon"]} />
+                                            )}
                                             Duyệt
                                         </button>
                                         <button
-                                            className="btn-reject"
+                                            className={styles["btn-reject"]}
                                             onClick={() =>
                                                 handleReject(article.id)
                                             }
                                             disabled={processing === article.id}
                                         >
-                                            {processing === article.id
-                                                ? "⏳"
-                                                : "✗"}{" "}
+                                            {processing === article.id ? (
+                                                <img src={icons.clock} alt="Processing" className={styles["btn-icon"]} />
+                                            ) : (
+                                                <img src={icons.closeIcon} alt="Reject" className={styles["btn-icon"]} />
+                                            )}
                                             Từ chối
                                         </button>
                                     </div>

@@ -92,14 +92,14 @@
 .home-section {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 4rem 2rem;
+    padding: 2rem;
 }
 
 /* Tăng khoảng cách giữa các sections trên PC */
 @media (min-width: 1024px) {
     .home-section {
         max-width: 1400px;
-        padding: 5rem 3rem;
+        padding: 2rem 3rem;
     }
 
     .home-section + .home-section {
@@ -110,7 +110,7 @@
 @media (min-width: 1400px) {
     .home-section {
         max-width: 1400px;
-        padding: 6rem 4rem;
+        padding: 2rem 4rem;
     }
 
     .home-section + .home-section {

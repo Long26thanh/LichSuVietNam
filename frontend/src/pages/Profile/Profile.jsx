@@ -442,7 +442,7 @@ const Profile = () => {
                     </div>
 
                     {/* Account Stats */}
-                    <div className="profile-stats-section">
+                    {/* <div className="profile-stats-section">
                         <h3>Thống kê tài khoản</h3>
                         <div className="stats-grid">
                             <div className="stat-item">
@@ -501,7 +501,7 @@ const Profile = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

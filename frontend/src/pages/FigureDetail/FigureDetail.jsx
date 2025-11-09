@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import figureService from "@/services/figureService";
 import locationService from "@/services/locationService";
 import { recordWebsiteView, recordFigureView } from "@/services/viewService";
-import { formatDateRange } from "@/utils/dateUtils";
+import { formatDateRange, convertImagesToAbsoluteUrls } from "@/utils";
 import { CommentSection } from "@/components";
 import "./FigureDetail.css";
 
@@ -18,13 +18,17 @@ const FigureDetail = () => {
     const [deathPlaceName, setDeathPlaceName] = useState(null);
 
     useEffect(() => {
-        if (item) return;
+        // Luôn fetch dữ liệu mới khi id thay đổi hoặc component mount
+        // State chỉ dùng để hiển thị tạm thời, nhưng vẫn cập nhật từ server
         const fetchDetail = async () => {
             try {
-                setLoading(true);
+                // Chỉ hiển thị loading nếu chưa có dữ liệu tạm từ state
+                if (!item) setLoading(true);
+                
                 const res = await figureService.getFigureById(id);
                 if (res?.success && res.data) {
                     setItem(res.data);
+                    setError(null);
                 } else {
                     setError("Không tìm thấy nhân vật");
                 }
@@ -133,15 +137,19 @@ const FigureDetail = () => {
                 {item.biography && (
                     <section className="fig-section">
                         <h2 className="section-title">Tiểu sử</h2>
-                        <div className="section-content">{item.biography}</div>
+                        <div 
+                            className="section-content"
+                            dangerouslySetInnerHTML={{ __html: convertImagesToAbsoluteUrls(item.biography) }}
+                        />
                     </section>
                 )}
                 {item.achievements && (
                     <section className="fig-section">
                         <h2 className="section-title">Thành tựu</h2>
-                        <div className="section-content">
-                            {item.achievements}
-                        </div>
+                        <div 
+                            className="section-content"
+                            dangerouslySetInnerHTML={{ __html: convertImagesToAbsoluteUrls(item.achievements) }}
+                        />
                     </section>
                 )}
             </main>

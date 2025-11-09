@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button, ConfirmDialog, ArticleForm } from "@/components";
+import config from "@/config";
 import articleService from "@/services/articleService";
 import "./UserArticles.css";
 
@@ -160,7 +161,7 @@ const UserArticles = () => {
         }
     };
 
-    const handleUpdateArticle = async (formData) => {
+    const handleUpdateArticle = async (formData, silent = false) => {
         if (!editingArticle) return;
 
         setFormLoading(true);
@@ -171,9 +172,13 @@ const UserArticles = () => {
             );
 
             if (response.success) {
-                alert("Cập nhật bài viết thành công!");
-                setIsFormOpen(false);
-                setEditingArticle(null);
+                // Chỉ hiển thị alert và đóng form nếu không phải auto-save
+                if (!silent) {
+                    alert("Cập nhật bài viết thành công!");
+                    setIsFormOpen(false);
+                    setEditingArticle(null);
+                }
+                
                 // Refresh list và stats
                 const res = await articleService.getUserArticles({
                     page,
@@ -186,14 +191,22 @@ const UserArticles = () => {
                     setTotal(res.pagination?.total || 0);
                 }
                 refreshStats();
+                
+                return true; // Trả về true để báo thành công
             } else {
-                alert(
-                    response.message || "Có lỗi xảy ra khi cập nhật bài viết"
-                );
+                if (!silent) {
+                    alert(
+                        response.message || "Có lỗi xảy ra khi cập nhật bài viết"
+                    );
+                }
+                return false;
             }
         } catch (error) {
             console.error("Error updating article:", error);
-            alert("Có lỗi xảy ra khi cập nhật bài viết");
+            if (!silent) {
+                alert("Có lỗi xảy ra khi cập nhật bài viết");
+            }
+            return false;
         } finally {
             setFormLoading(false);
         }
@@ -277,6 +290,23 @@ const UserArticles = () => {
                 {statusInfo.label}
             </span>
         );
+    };
+
+    // Helper function to get full image URL
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        
+        // If already a full URL (http/https) or data URL, return as is
+        if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+            return imagePath;
+        }
+        
+        // If it's a relative path, prepend server URL
+        if (imagePath.startsWith('/assets/images/')) {
+            return `${config.serverUrl}${imagePath}`;
+        }
+        
+        return imagePath;
     };
 
     if (!user) {
@@ -388,7 +418,7 @@ const UserArticles = () => {
                                 <div className="article-image">
                                     {article.coverImage ? (
                                         <img
-                                            src={article.coverImage}
+                                            src={getImageUrl(article.coverImage)}
                                             alt={article.title}
                                             onError={(e) => {
                                                 e.target.src =

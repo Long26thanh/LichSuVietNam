@@ -1,0 +1,158 @@
+/* ========================================
+   ADMIN COMMON STYLES - Header Design
+   ======================================== */
+
+/* Modern Page Header - Shared across all admin pages */
+.admin-page-header {
+    position: relative;
+    margin-bottom: 32px;
+    padding: 32px 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    overflow: hidden;
+    text-align: center;
+}
+
+.admin-page-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.admin-page-header::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: adminHeaderGlow 8s ease-in-out infinite;
+}
+
+@keyframes adminHeaderGlow {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(-20px, 20px) scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+.admin-page-header h1 {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 12px 0;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+}
+
+.admin-page-header h1 .header-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: inline-block;
+    filter: brightness(0) invert(1);
+    animation: adminBounceIcon 2s ease-in-out infinite;
+}
+
+@keyframes adminBounceIcon {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.admin-page-header p {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.admin-page-header .header-stats {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    justify-content: center;
+}
+
+.header-stats .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 120px;
+}
+
+.header-stats .stat-label {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+}
+
+.header-stats .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-page-header {
+        padding: 24px 20px;
+        border-radius: 16px;
+    }
+
+    .admin-page-header h1 {
+        font-size: 1.75rem;
+        gap: 12px;
+    }
+
+    .admin-page-header h1 .header-icon {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .admin-page-header p {
+        font-size: 0.95rem;
+    }
+
+    .admin-page-header .header-stats {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .header-stats .stat-item {
+        flex: 1;
+        min-width: 100px;
+    }
+
+    .header-stats .stat-value {
+        font-size: 1.5rem;
+    }
+}

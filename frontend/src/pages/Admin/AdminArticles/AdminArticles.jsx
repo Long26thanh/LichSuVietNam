@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, ConfirmDialog, ArticleForm } from "@/components";
 import articleService from "@/services/articleService";
+import { myArticles } from "@/assets/icons";
+import "../AdminCommon.css";
 import "./AdminArticles.css";
 
 const defaultFilters = { q: "", status: "" };
@@ -120,7 +122,7 @@ const AdminArticles = () => {
         setIsFormOpen(true);
     };
 
-    const handleUpdateArticle = async (formData) => {
+    const handleUpdateArticle = async (formData, silent = false) => {
         if (!editingArticle) return;
 
         setFormLoading(true);
@@ -131,16 +133,22 @@ const AdminArticles = () => {
             );
 
             if (response.success) {
-                alert("Cập nhật bài viết thành công!");
-                setIsFormOpen(false);
-                setEditingArticle(null);
+                if (!silent) {
+                    alert("Cập nhật bài viết thành công!");
+                    setIsFormOpen(false);
+                    setEditingArticle(null);
+                }
                 handleRefresh();
+                return true;
             } else {
                 const errorMsg =
                     response.message || "Cập nhật bài viết thất bại";
                 console.error("Update failed:", errorMsg);
-                setError(errorMsg);
-                alert(errorMsg);
+                if (!silent) {
+                    setError(errorMsg);
+                    alert(errorMsg);
+                }
+                return false;
             }
         } catch (err) {
             console.error("Lỗi khi cập nhật bài viết:", err);
@@ -148,16 +156,19 @@ const AdminArticles = () => {
             const errorMsg =
                 err.response?.data?.message ||
                 "Có lỗi xảy ra khi cập nhật bài viết";
-            setError(errorMsg);
-            alert(errorMsg);
+            if (!silent) {
+                setError(errorMsg);
+                alert(errorMsg);
+            }
+            return false;
         } finally {
             setFormLoading(false);
         }
     };
 
-    const handleFormSubmit = (formData) => {
+    const handleFormSubmit = (formData, silent = false) => {
         if (editingArticle) {
-            handleUpdateArticle(formData);
+            return handleUpdateArticle(formData, silent);
         } else {
             handleCreateArticle(formData);
         }
@@ -220,8 +231,11 @@ const AdminArticles = () => {
 
     return (
         <div className="articles-management">
-            <div className="page-header">
-                <h1>Quản lý bài viết</h1>
+            <div className="admin-page-header articles">
+                <h1>
+                    <img src={myArticles} alt="" className="header-icon" />
+                    Quản lý bài viết
+                </h1>
                 <p>Quản lý các bài viết trong hệ thống</p>
             </div>
 

@@ -5,6 +5,7 @@ import routes from "./routes";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import useAutoSessionSwitch from "./hooks/useAutoSessionSwitch";
+import { useTokenExpirationCheck } from "./hooks";
 import config from "./config";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
 
 function AppContent() {
     useAutoSessionSwitch();
+    useTokenExpirationCheck(); // Kiểm tra token khi chuyển route
     return (
         <div className="App">
             <Routes>

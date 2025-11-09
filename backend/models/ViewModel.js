@@ -13,6 +13,8 @@ class ViewModel {
         ipAddress,
     }) {
         try {
+            // (debug logs removed)
+
             const sql = `
                 INSERT INTO "LuotXem" 
                 ("LoaiTrang", "MaBaiViet", "MaNhanVat", "MaThoiKy", "MaSuKien", "MaDiaDanh", "user_id", "ip_address")
@@ -28,16 +30,21 @@ class ViewModel {
                 maSuKien || null,
                 maDiaDanh || null,
                 userId || null,
-                ipAddress,
+                ipAddress || null,
             ];
 
             const result = await query(sql, values);
+            
+            // result returned
+            
             return result.rows[0];
         } catch (error) {
             // Nếu trigger bỏ qua (trả về NULL), không coi là lỗi
             if (error.message.includes("null value")) {
+                // Trigger skipped duplicate view; swallow silently
                 return null;
             }
+            console.error('Error recording view:', error);
             throw error;
         }
     }
@@ -218,6 +225,62 @@ class ViewModel {
             return result.rows;
         } catch (error) {
             console.error("Error getting view stats by date range:", error);
+            throw error;
+        }
+    }
+
+    // Thống kê chi tiết lượt xem theo ngày/tháng/năm
+    static async getDetailedStatsByPeriod(startDate, endDate, period = "day") {
+        try {
+            let dateFormat;
+            switch (period) {
+                case "day":
+                    dateFormat = "YYYY-MM-DD";
+                    break;
+                case "week":
+                    dateFormat = "IYYY-IW";
+                    break;
+                case "month":
+                    dateFormat = "YYYY-MM";
+                    break;
+                case "year":
+                    dateFormat = "YYYY";
+                    break;
+                default:
+                    dateFormat = "YYYY-MM-DD";
+            }
+
+            const result = await query(
+                `SELECT 
+                    TO_CHAR("viewed_at", '${dateFormat}') as period,
+                    COUNT(*) as total,
+                    COUNT(DISTINCT "ip_address") as unique_visitors,
+                    COUNT(CASE WHEN "LoaiTrang" = 'Bài viết' THEN 1 END) as article_views,
+                    COUNT(CASE WHEN "LoaiTrang" = 'Website' THEN 1 END) as website_views
+                FROM "LuotXem"
+                WHERE "viewed_at" BETWEEN $1 AND $2
+                GROUP BY period
+                ORDER BY period ASC`,
+                [startDate, endDate]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error("Error getting detailed view stats by period:", error);
+            throw error;
+        }
+    }
+
+    // Đếm lượt xem trong khoảng thời gian
+    static async countByDateRange(startDate, endDate) {
+        try {
+            const result = await query(
+                `SELECT COUNT(*) as count FROM "LuotXem" 
+                WHERE "viewed_at" BETWEEN $1 AND $2`,
+                [startDate, endDate]
+            );
+            return parseInt(result.rows[0].count, 10);
+        } catch (error) {
+            console.error("Error counting views by date range:", error);
             throw error;
         }
     }

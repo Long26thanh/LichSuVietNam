@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import config from "@/config";
 import styles from "./QuickActions.module.css";
+import * as icons from "@/assets/icons";
 
 const QuickActions = () => {
     const navigate = useNavigate();
@@ -10,7 +11,7 @@ const QuickActions = () => {
         {
             title: "Thêm sự kiện mới",
             description: "Tạo sự kiện lịch sử mới",
-            icon: "📅",
+            icon: icons.events,
             color: "#2196F3",
             path: config.routes.adminEvents,
             action: "add",
@@ -18,7 +19,7 @@ const QuickActions = () => {
         {
             title: "Thêm nhân vật",
             description: "Thêm nhân vật lịch sử",
-            icon: "👤",
+            icon: icons.user,
             color: "#FF9800",
             path: config.routes.adminFigures,
             action: "add",
@@ -26,7 +27,7 @@ const QuickActions = () => {
         {
             title: "Thêm địa điểm",
             description: "Thêm địa điểm lịch sử",
-            icon: "📍",
+            icon: icons.locationDot,
             color: "#9C27B0",
             path: config.routes.adminLocations,
             action: "add",
@@ -34,7 +35,7 @@ const QuickActions = () => {
         {
             title: "Quản lý người dùng",
             description: "Xem và quản lý người dùng",
-            icon: "👥",
+            icon: icons.usersGroup,
             color: "#4CAF50",
             path: config.routes.adminUsers,
             action: "manage",
@@ -60,7 +61,7 @@ const QuickActions = () => {
                         style={{ "--action-color": action.color }}
                     >
                         <div className={styles["action-icon"]}>
-                            {action.icon}
+                            <img src={action.icon} alt="" />
                         </div>
                         <div className={styles["action-content"]}>
                             <h4 className={styles["action-title"]}>
@@ -70,7 +71,9 @@ const QuickActions = () => {
                                 {action.description}
                             </p>
                         </div>
-                        <div className={styles["action-arrow"]}>→</div>
+                        <div className={styles["action-arrow"]}>
+                            <img src={icons.dropdownArrow} alt="" />
+                        </div>
                     </button>
                 ))}
             </div>

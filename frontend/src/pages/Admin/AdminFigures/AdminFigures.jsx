@@ -4,6 +4,8 @@ import { Button, ConfirmDialog, FigureForm } from "@/components";
 import figureService from "@/services/figureService";
 import periodService from "@/services/periodService";
 import { formatShortDateRange } from "@/utils/dateUtils";
+import { user } from "@/assets/icons";
+import "../AdminCommon.css";
 import "./AdminFigures.css";
 
 const defaultFilters = { q: "" };
@@ -204,8 +206,11 @@ const AdminFigures = () => {
 
     return (
         <div className="figures-management">
-            <div className="page-header">
-                <h1>Quản lý nhân vật</h1>
+            <div className="admin-page-header figures">
+                <h1>
+                    <img src={user} alt="" className="header-icon" />
+                    Quản lý nhân vật
+                </h1>
                 <p>Quản lý các nhân vật lịch sử trong hệ thống</p>
             </div>
 

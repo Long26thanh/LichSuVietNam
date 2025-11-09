@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, PeriodForm, ConfirmDialog } from "@/components";
 import periodService from "@/services/periodService";
+import { timeline } from "@/assets/icons";
+import "../AdminCommon.css";
 import "./AdminPeriods.css";
 
 const defaultFilters = { q: "" };
@@ -129,8 +131,11 @@ const AdminPeriods = () => {
 
     return (
         <div className="periods-management">
-            <div className="page-header">
-                <h1>Quản lý thời kỳ</h1>
+            <div className="admin-page-header periods">
+                <h1>
+                    <img src={timeline} alt="" className="header-icon" />
+                    Quản lý thời kỳ
+                </h1>
                 <p>Quản lý các thời kỳ lịch sử trong hệ thống</p>
             </div>
 

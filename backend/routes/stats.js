@@ -21,4 +21,36 @@ router.get(
     StatsController.getStatsByDateRange
 );
 
+// Lấy thống kê Dashboard chi tiết theo ngày/tháng/năm
+router.get(
+    "/dashboard",
+    authenticateToken,
+    requireAdmin,
+    StatsController.getDashboardStats
+);
+
+// Lấy thống kê theo tháng trong năm
+router.get(
+    "/monthly",
+    authenticateToken,
+    requireAdmin,
+    StatsController.getMonthlyStats
+);
+
+// Lấy thống kê theo ngày trong tháng
+router.get(
+    "/daily",
+    authenticateToken,
+    requireAdmin,
+    StatsController.getDailyStats
+);
+
+// Lấy danh sách chi tiết các bài viết/nội dung theo tháng
+router.get(
+    "/monthly-details",
+    authenticateToken,
+    requireAdmin,
+    StatsController.getMonthlyDetailedContent
+);
+
 export default router;

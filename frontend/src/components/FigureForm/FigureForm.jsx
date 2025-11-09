@@ -2,6 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Button, TextEditor } from "@/components";
 import periodService from "@/services/periodService";
 import locationService from "@/services/locationService";
+import uploadService from "@/services/uploadService";
+import {
+    isBase64Image,
+    extractBase64Images,
+    replaceBase64WithUrls,
+} from "@/utils";
 import styles from "./FigureForm.module.css";
 
 const defaultValues = {
@@ -190,35 +196,84 @@ const FigureForm = ({
         e.preventDefault();
         if (!validateForm()) return;
 
-        const submitData = {
-            name: formData.name,
-            birth_date: formData.birth_date
-                ? parseInt(formData.birth_date)
-                : null,
-            birth_month: formData.birth_month
-                ? parseInt(formData.birth_month)
-                : null,
-            birth_year: formData.birth_year
-                ? parseInt(formData.birth_year)
-                : null,
-            death_date: formData.death_date
-                ? parseInt(formData.death_date)
-                : null,
-            death_month: formData.death_month
-                ? parseInt(formData.death_month)
-                : null,
-            death_year: formData.death_year
-                ? parseInt(formData.death_year)
-                : null,
-            title: formData.title,
-            period_id: formData.period_id || null,
-            birth_place_id: formData.birth_place_id || null,
-            death_place_id: formData.death_place_id || null,
-            biography: formData.biography,
-            achievements: formData.achievements,
-        };
+        try {
+            // Upload ảnh từ biography và achievements
+            let processedBiography = formData.biography;
+            let processedAchievements = formData.achievements;
 
-        await onSubmit(submitData);
+            // Extract và upload ảnh từ biography
+            const base64ImagesInBiography = extractBase64Images(formData.biography);
+            if (base64ImagesInBiography.length > 0) {
+                const replacementMap = {};
+                for (const base64Image of base64ImagesInBiography) {
+                    try {
+                        const uploadResponse = await uploadService.uploadImage(
+                            base64Image,
+                            "figures"
+                        );
+                        if (uploadResponse.success) {
+                            replacementMap[base64Image] = uploadResponse.data.url;
+                        }
+                    } catch (imgError) {
+                        console.error("Failed to upload biography image:", imgError);
+                    }
+                }
+                processedBiography = replaceBase64WithUrls(formData.biography, replacementMap);
+            }
+
+            // Extract và upload ảnh từ achievements
+            const base64ImagesInAchievements = extractBase64Images(formData.achievements);
+            if (base64ImagesInAchievements.length > 0) {
+                const replacementMap = {};
+                for (const base64Image of base64ImagesInAchievements) {
+                    try {
+                        const uploadResponse = await uploadService.uploadImage(
+                            base64Image,
+                            "figures"
+                        );
+                        if (uploadResponse.success) {
+                            replacementMap[base64Image] = uploadResponse.data.url;
+                        }
+                    } catch (imgError) {
+                        console.error("Failed to upload achievements image:", imgError);
+                    }
+                }
+                processedAchievements = replaceBase64WithUrls(formData.achievements, replacementMap);
+            }
+
+            const submitData = {
+                name: formData.name,
+                birth_date: formData.birth_date
+                    ? parseInt(formData.birth_date)
+                    : null,
+                birth_month: formData.birth_month
+                    ? parseInt(formData.birth_month)
+                    : null,
+                birth_year: formData.birth_year
+                    ? parseInt(formData.birth_year)
+                    : null,
+                death_date: formData.death_date
+                    ? parseInt(formData.death_date)
+                    : null,
+                death_month: formData.death_month
+                    ? parseInt(formData.death_month)
+                    : null,
+                death_year: formData.death_year
+                    ? parseInt(formData.death_year)
+                    : null,
+                title: formData.title,
+                period_id: formData.period_id || null,
+                birth_place_id: formData.birth_place_id || null,
+                death_place_id: formData.death_place_id || null,
+                biography: processedBiography,
+                achievements: processedAchievements,
+            };
+
+            await onSubmit(submitData);
+        } catch (error) {
+            console.error("Error processing form:", error);
+            alert("Có lỗi xảy ra khi xử lý form");
+        }
     };
 
     return (
@@ -446,6 +501,7 @@ const FigureForm = ({
                     <h3 className={styles.sectionTitle}>Tiểu sử</h3>
                     <div className={styles.formGroup}>
                         <TextEditor
+                        type="rich"
                             value={formData.biography}
                             onChange={handleBiographyChange}
                             placeholder="Nhập tiểu sử của nhân vật..."

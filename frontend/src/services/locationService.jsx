@@ -1,15 +1,8 @@
-import axios from "axios";
-import config from "../config";
+import { createApiClient } from "./apiClient";
 
 const API_URL = "/api/locations";
+const apiClient = createApiClient(API_URL);
 
-const apiClient = axios.create({
-    baseURL: config.serverUrl + API_URL,
-    timeout: 10000,
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
 class LocationService {
     // Lấy danh sách địa danh với phân trang, tìm kiếm, lọc loại
     async getAllLocations({

@@ -1,15 +1,8 @@
-import axios from "axios";
-import config from "../config";
+import { createApiClient } from "./apiClient";
 
 const API_URL = "/api/periods";
 
-const apiClient = axios.create({
-    baseURL: config.serverUrl + API_URL,
-    timeout: 10000,
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
+const apiClient = createApiClient(API_URL);
 
 class PeriodService {
     // Lấy tất cả các thời kỳ

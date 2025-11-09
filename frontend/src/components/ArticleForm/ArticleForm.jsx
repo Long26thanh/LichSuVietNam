@@ -107,11 +107,17 @@ const ArticleForm = ({
         content: "",
         coverImage: "",
         status: defaultStatus,
+        scheduledPublishAt: "", // Thêm trường lên lịch
         relatedFigures: [],
         relatedPeriods: [],
         relatedEvents: [],
         relatedLocations: [],
     });
+
+    // State cho tự động lưu nháp
+    const [autoSaveStatus, setAutoSaveStatus] = useState(""); // "", "saving", "saved", "error"
+    const autoSaveTimerRef = React.useRef(null);
+    const lastSavedDataRef = React.useRef(null);
 
     // Data for dropdowns
     const [figures, setFigures] = useState([]);
@@ -143,6 +149,7 @@ const ArticleForm = ({
                 content: initialValues.content || "",
                 coverImage: initialValues.coverImage || "",
                 status: initialValues.status || "Bản nháp",
+                scheduledPublishAt: initialValues.scheduledPublishAt || "",
                 relatedFigures: initialValues.relations?.figures || [],
                 relatedPeriods: initialValues.relations?.periods || [],
                 relatedEvents: initialValues.relations?.events || [],
@@ -150,6 +157,13 @@ const ArticleForm = ({
             });
             // Set tên tác giả từ initialValues nếu có
             setAuthorName(initialValues.authorName || "");
+            
+            // Save initial data for auto-save comparison
+            lastSavedDataRef.current = {
+                title: initialValues.title || "",
+                content: initialValues.content || "",
+                coverImage: initialValues.coverImage || "",
+            };
         } else {
             // Mode create - set trạng thái mặc định (Chờ duyệt khi hideStatus = true)
             setFormData((prev) => ({
@@ -186,6 +200,68 @@ const ArticleForm = ({
         };
         loadData();
     }, []);
+
+    // Tự động lưu nháp khi có thay đổi (chỉ cho mode edit và có initialValues.id)
+    useEffect(() => {
+        // Chỉ auto-save nếu đang edit và có ID
+        if (!initialValues?.id || mode !== "edit") return;
+        
+        // Chỉ auto-save nếu status là "Bản nháp"
+        if (formData.status !== "Bản nháp") return;
+        
+        // Clear timer cũ
+        if (autoSaveTimerRef.current) {
+            clearTimeout(autoSaveTimerRef.current);
+        }
+        
+        // Kiểm tra xem có thay đổi không
+        const hasChanges = lastSavedDataRef.current && (
+            lastSavedDataRef.current.title !== formData.title ||
+            lastSavedDataRef.current.content !== formData.content ||
+            lastSavedDataRef.current.coverImage !== formData.coverImage
+        );
+        
+        if (!hasChanges) return;
+        
+        // Set timer để auto-save sau 3 giây không có thay đổi
+        autoSaveTimerRef.current = setTimeout(async () => {
+            setAutoSaveStatus("saving");
+            
+            try {
+                // Gọi onSubmit với silent flag để không hiển thị notification
+                const result = await onSubmit({
+                    ...formData,
+                    status: "Bản nháp", // Đảm bảo giữ nguyên status là Bản nháp
+                }, true); // silent = true
+                
+                if (result !== false) {
+                    lastSavedDataRef.current = {
+                        title: formData.title,
+                        content: formData.content,
+                        coverImage: formData.coverImage,
+                    };
+                    setAutoSaveStatus("saved");
+                    
+                    // Clear "saved" status sau 2 giây
+                    setTimeout(() => setAutoSaveStatus(""), 2000);
+                } else {
+                    setAutoSaveStatus("error");
+                    setTimeout(() => setAutoSaveStatus(""), 3000);
+                }
+            } catch (error) {
+                console.error("Auto-save error:", error);
+                setAutoSaveStatus("error");
+                setTimeout(() => setAutoSaveStatus(""), 3000);
+            }
+        }, 3000);
+        
+        // Cleanup
+        return () => {
+            if (autoSaveTimerRef.current) {
+                clearTimeout(autoSaveTimerRef.current);
+            }
+        };
+    }, [formData.title, formData.content, formData.coverImage, formData.status, initialValues, mode, onSubmit]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -274,8 +350,11 @@ const ArticleForm = ({
 
     const [isUploading, setIsUploading] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (e, silent = false) => {
+        // Nếu được gọi từ form event, prevent default
+        if (e?.preventDefault) {
+            e.preventDefault();
+        }
 
         try {
             setIsUploading(true);
@@ -354,23 +433,32 @@ const ArticleForm = ({
                     finalStatus === "Đã xuất bản"
                         ? new Date().toISOString()
                         : null,
+                // Thêm scheduledPublishAt nếu có
+                scheduledPublishAt: formData.scheduledPublishAt || null,
                 related_figures: formData.relatedFigures.map((f) => f.id),
                 related_periods: formData.relatedPeriods.map((p) => p.id),
                 related_events: formData.relatedEvents.map((e) => e.id),
                 related_locations: formData.relatedLocations.map((l) => l.id),
             };
 
-            onSubmit(submitData);
+            // Gọi onSubmit, nếu silent = true thì pass flag để không hiển thị notification
+            const result = await onSubmit(submitData, silent);
+            return result;
         } catch (error) {
             console.error("Error in form submission:", error);
             setIsUploading(false);
-            alert(
-                `Có lỗi xảy ra: ${
-                    error.response?.data?.message ||
-                    error.message ||
-                    "Vui lòng thử lại"
-                }`
-            );
+            
+            // Chỉ hiển thị alert nếu không phải auto-save
+            if (!silent) {
+                alert(
+                    `Có lỗi xảy ra: ${
+                        error.response?.data?.message ||
+                        error.message ||
+                        "Vui lòng thử lại"
+                    }`
+                );
+            }
+            return false;
         }
     };
 
@@ -385,6 +473,25 @@ const ArticleForm = ({
                     <label htmlFor="title">
                         Tiêu đề bài viết{" "}
                         <span className={styles.required}>*</span>
+                        {/* Auto-save status indicator */}
+                        {mode === "edit" && formData.status === "Bản nháp" && autoSaveStatus && (
+                            <span
+                                style={{
+                                    marginLeft: "10px",
+                                    fontSize: "12px",
+                                    fontWeight: "normal",
+                                    color: autoSaveStatus === "saving" 
+                                        ? "#6b7280" 
+                                        : autoSaveStatus === "saved" 
+                                        ? "#10b981" 
+                                        : "#ef4444",
+                                }}
+                            >
+                                {autoSaveStatus === "saving" && "Đang lưu nháp..."}
+                                {autoSaveStatus === "saved" && "✓ Đã lưu"}
+                                {autoSaveStatus === "error" && "✗ Lỗi lưu"}
+                            </span>
+                        )}
                     </label>
                     <input
                         type="text"
@@ -460,6 +567,7 @@ const ArticleForm = ({
                             <option value="Chờ duyệt">Chờ duyệt</option>
                             <option value="Đã xuất bản">Đã xuất bản</option>
                             <option value="Lưu trữ">Lưu trữ</option>
+                            <option value="Lên lịch">Lên lịch</option>
                         </select>
                         <small
                             style={{
@@ -474,6 +582,31 @@ const ArticleForm = ({
                         </small>
                     </div>
                 )}
+
+                {/* Lên lịch xuất bản - Chỉ hiển thị cho admin/SA */}
+                {/* {!hideStatus && (user?.role === "Admin" || user?.role === "SuperAdmin" || isAdminSession) && (
+                    <div className={styles.formGroup}>
+                        <label htmlFor="scheduledPublishAt">Lên lịch xuất bản (tùy chọn)</label>
+                        <input
+                            type="datetime-local"
+                            id="scheduledPublishAt"
+                            name="scheduledPublishAt"
+                            value={formData.scheduledPublishAt || ""}
+                            onChange={handleChange}
+                            min={new Date().toISOString().slice(0, 16)}
+                            className={styles.input}
+                        />
+                        <small
+                            style={{
+                                color: "#6b7280",
+                                marginTop: "4px",
+                                display: "block",
+                            }}
+                        >
+                            * Bài viết sẽ tự động xuất bản vào thời gian đã đặt. Để trống nếu muốn xuất bản ngay.
+                        </small>
+                    </div>
+                )} */}
 
                 {/* Related Figures */}
                 <div className={styles.formGroup}>

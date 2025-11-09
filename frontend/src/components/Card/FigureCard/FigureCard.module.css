@@ -40,11 +40,15 @@
 
 /* Figure Card Header */
 .figure-card-header {
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.figure-header-content {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.6rem;
-    gap: 0.75rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .figure-name {
@@ -53,20 +57,19 @@
     color: #1e293b;
     margin: 0;
     line-height: 1.4;
-    flex: 1;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
     letter-spacing: -0.01em;
 }
 
-.figure-card-header .figure-title {
+.figure-title {
     background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
     color: white;
-    padding: 0.3rem 0.75rem;
+    padding: 0.35rem 0.85rem;
     border-radius: 12px;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    white-space: nowrap;
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    display: inline-block;
 }
 
 /* Figure Card Content */
@@ -119,31 +122,70 @@
     color: #4f46e5;
 }
 
-.figure-achievements ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.figure-achievements li {
+.achievements-content {
     font-size: 0.92rem;
     color: #4a5568;
     line-height: 1.65;
-    margin-bottom: 0.5rem;
-    padding-left: 1.25rem;
-    position: relative;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: calc(0.92rem * 1.65 * 3);
+    max-height: calc(0.92rem * 1.65 * 3);
 }
 
-.figure-achievements li:before {
-    content: "•";
-    color: #8b5cf6;
-    font-weight: bold;
-    position: absolute;
-    left: 0;
+/* Handle HTML formatting from text editor */
+.achievements-content p {
+    margin: 0;
+    display: inline;
 }
 
-.figure-achievements li:last-child {
-    margin-bottom: 0;
+.achievements-content strong,
+.achievements-content b {
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.achievements-content em,
+.achievements-content i {
+    font-style: italic;
+}
+
+.achievements-content u {
+    text-decoration: underline;
+}
+
+.achievements-content s,
+.achievements-content strike {
+    text-decoration: line-through;
+}
+
+.achievements-content ul,
+.achievements-content ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    list-style-position: inside;
+}
+
+.achievements-content li {
+    margin-bottom: 0.25rem;
+}
+
+.achievements-content br {
+    display: none;
+}
+
+.achievements-content h1,
+.achievements-content h2,
+.achievements-content h3,
+.achievements-content h4,
+.achievements-content h5,
+.achievements-content h6 {
+    font-size: inherit;
+    font-weight: 700;
+    margin: 0;
+    display: inline;
 }
 
 /* Figure Card Footer */

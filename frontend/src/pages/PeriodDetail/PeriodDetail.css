@@ -170,6 +170,68 @@
     margin-bottom: 0;
 }
 
+.section-content b,
+.section-content strong {
+    font-weight: 700 !important;
+}
+
+.section-content i,
+.section-content em {
+    font-style: italic !important;
+}
+
+.section-content u {
+    text-decoration: underline !important;
+}
+
+.section-content s,
+.section-content strike,
+.section-content del {
+    text-decoration: line-through !important;
+}
+
+/* List styling for content */
+.section-content ul,
+.section-content ol {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    list-style-position: outside;
+    text-align: left;
+}
+
+.section-content ul {
+    list-style-type: disc;
+}
+
+.section-content ol {
+    list-style-type: decimal;
+}
+
+.section-content li {
+    margin-bottom: 0.5rem;
+    display: list-item;
+}
+
+.section-content ul ul {
+    list-style-type: circle;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.section-content ul ul ul {
+    list-style-type: square;
+}
+
+.section-content ol ol {
+    list-style-type: lower-alpha;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.section-content ol ol ol {
+    list-style-type: lower-roman;
+}
+
 /* Period Metadata Card */
 .period-metadata-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

@@ -73,6 +73,7 @@
     width: 30px;
     height: 30px;
     stroke-width: 2;
+    filter: brightness(0) saturate(100%);
 }
 
 .stat-content {

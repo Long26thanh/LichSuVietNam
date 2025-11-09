@@ -35,11 +35,15 @@
 }
 
 .event-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
     margin-bottom: 1rem;
+    text-align: center;
+}
+
+.event-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    align-items: center;
 }
 
 .event-card .event-title {
@@ -49,17 +53,16 @@
     margin: 0;
     line-height: 1.4;
     letter-spacing: -0.01em;
-    flex: 1;
 }
 
 .event-card .event-date {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
     color: white;
-    padding: 0.4rem 0.8rem;
+    padding: 0.4rem 0.85rem;
     border-radius: 12px;
     font-weight: 600;
-    white-space: nowrap;
+    display: inline-block;
 }
 
 .event-card .event-card-content {
@@ -83,6 +86,65 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-height: calc(1rem * 1.7 * 3);
+    max-height: calc(1rem * 1.7 * 3);
+}
+
+/* Handle HTML formatting from text editor */
+.event-card .event-description p {
+    margin: 0;
+    display: inline;
+}
+
+.event-card .event-description strong,
+.event-card .event-description b {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.event-card .event-description em,
+.event-card .event-description i {
+    font-style: italic;
+}
+
+.event-card .event-description u {
+    text-decoration: underline;
+}
+
+.event-card .event-description s,
+.event-card .event-description strike {
+    text-decoration: line-through;
+}
+
+.event-card .event-description ul,
+.event-card .event-description ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    display: inline;
+}
+
+.event-card .event-description li {
+    display: inline;
+}
+
+.event-card .event-description li:not(:last-child)::after {
+    content: ", ";
+}
+
+.event-card .event-description br {
+    display: none;
+}
+
+.event-card .event-description h1,
+.event-card .event-description h2,
+.event-card .event-description h3,
+.event-card .event-description h4,
+.event-card .event-description h5,
+.event-card .event-description h6 {
+    font-size: inherit;
+    font-weight: 700;
+    margin: 0;
+    display: inline;
 }
 
 .event-card .event-location {

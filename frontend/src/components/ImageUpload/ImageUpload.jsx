@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import config from "@/config";
 import styles from "./ImageUpload.module.css";
 
 const ImageUpload = ({
@@ -16,9 +17,34 @@ const ImageUpload = ({
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
 
+    // Helper function to get full image URL
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        
+        // If already a full URL (http/https) or data URL, return as is
+        if (imagePath.startsWith('http://') || 
+            imagePath.startsWith('https://') || 
+            imagePath.startsWith('data:')) {
+            return imagePath;
+        }
+        
+        // If it's a relative path from backend, prepend server URL
+        if (imagePath.startsWith('/assets/images/')) {
+            return `${config.serverUrl}${imagePath}`;
+        }
+        
+        // If it's any other relative path, prepend server URL
+        if (imagePath.startsWith('/')) {
+            return `${config.serverUrl}${imagePath}`;
+        }
+        
+        // Default case: return as is
+        return imagePath;
+    };
+
     // Update preview when value prop changes (for edit mode)
     React.useEffect(() => {
-        setPreview(value || null);
+        setPreview(value ? getImageUrl(value) : null);
     }, [value]);
 
     const validateFile = (file) => {

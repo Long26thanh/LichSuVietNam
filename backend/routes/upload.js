@@ -51,14 +51,12 @@ router.post("/image", authenticateToken, async (req, res) => {
         const randomStr = Math.random().toString(36).substring(2, 15);
         const filename = `${folder}_${timestamp}_${randomStr}.${imageType}`;
 
-        // Create directory structure if it doesn't exist
+        // Create directory structure in src/assets/images
         const uploadDir = path.join(
             __dirname,
-            "../../frontend/public/assets/images",
+            "../../frontend/src/assets/images",
             folder
         );
-
-        // Debug logs removed to reduce server console noise
 
         await fs.mkdir(uploadDir, { recursive: true });
 
@@ -66,7 +64,7 @@ router.post("/image", authenticateToken, async (req, res) => {
         const filePath = path.join(uploadDir, filename);
         await fs.writeFile(filePath, buffer);
 
-        // Return the public URL path
+        // Return the relative URL path that backend will serve
         const imageUrl = `/assets/images/${folder}/${filename}`;
 
         res.json({
@@ -108,7 +106,7 @@ router.delete("/image", authenticateToken, async (req, res) => {
         // Extract path from URL
         // Example: /assets/images/articles/filename.jpg
         const urlPath = imageUrl.replace(/^\//, ""); // Remove leading slash
-        const filePath = path.join(__dirname, "../../frontend/public", urlPath);
+        const filePath = path.join(__dirname, "../../frontend", urlPath);
 
         // Check if file exists
         try {

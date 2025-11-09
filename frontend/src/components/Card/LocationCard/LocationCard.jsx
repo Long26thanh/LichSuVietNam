@@ -44,9 +44,10 @@ const LocationCard = ({ location, viewCount = 0, commentCount = 0 }) => {
                 )}
 
                 {location.description && (
-                    <div className={styles["location-description"]}>
-                        <p>{location.description}</p>
-                    </div>
+                    <div 
+                        className={styles["location-description"]}
+                        dangerouslySetInnerHTML={{ __html: location.description }}
+                    />
                 )}
 
                 {location.latitude && location.longitude && (

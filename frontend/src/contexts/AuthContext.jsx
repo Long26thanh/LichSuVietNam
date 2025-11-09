@@ -191,6 +191,51 @@ export function AuthProvider({ children }) {
     const [state, dispatch] = useReducer(authReducer, initialState);
     const [isInitialized, setIsInitialized] = React.useState(false);
 
+    // Hàm kiểm tra và xử lý token hết hạn
+    const checkAndHandleTokenExpiration = React.useCallback(async () => {
+        try {
+            const activeSessionType = localStorage.getItem("session_type") || "user";
+            const token = activeSessionType === "admin"
+                ? localStorage.getItem("admin_auth_token")
+                : localStorage.getItem("auth_token");
+
+            if (!token) {
+                return; // Không có token, không cần kiểm tra
+            }
+
+            // Kiểm tra token có thực sự hết hạn không (dùng decode JWT)
+            const isExpired = authService.isTokenExpired(token);
+            
+            if (isExpired) {
+                // Token đã hết hạn hoàn toàn, KHÔNG refresh mà logout luôn
+                console.warn("Token expired, logging out...");
+                await authService.logout();
+                dispatch({ type: AUTH_ACTIONS.LOGOUT });
+                return;
+            }
+            
+            // Token vẫn còn hạn, kiểm tra xem có sắp hết hạn không
+            const isExpiringSoon = authService.isTokenExpiringSoon(token);
+            
+            if (isExpiringSoon) {
+                // Token sắp hết hạn (trong vòng 5 phút), refresh ngay
+                console.log("Token expiring soon, refreshing...");
+                try {
+                    await authService.refreshToken();
+                    console.log("Token refreshed successfully");
+                } catch (refreshError) {
+                    console.error("Token refresh failed:", refreshError);
+                    // Refresh thất bại, logout
+                    await authService.logout();
+                    dispatch({ type: AUTH_ACTIONS.LOGOUT });
+                }
+            }
+            // Nếu token vẫn còn hạn tốt (không expired và không expiring soon), không làm gì cả
+        } catch (error) {
+            console.error("Error checking token expiration:", error);
+        }
+    }, []);
+
     // Khởi tạo authentication khi component được mount
     useEffect(() => {
         // Tránh gọi lại nếu đã khởi tạo
@@ -222,6 +267,39 @@ export function AuthProvider({ children }) {
                     return;
                 }
 
+                // KIỂM TRA TOKEN ĐÃ HẾT HẠN CHƯA TRƯỚC KHI VALIDATE
+                const isExpired = authService.isTokenExpired(token);
+                
+                if (isExpired) {
+                    // Token đã hết hạn hoàn toàn, KHÔNG refresh mà logout luôn
+                    console.warn("Token expired on page load, logging out...");
+                    await authService.logout();
+                    dispatch({
+                        type: AUTH_ACTIONS.LOGOUT,
+                    });
+                    return;
+                }
+
+                // Token vẫn còn hạn, kiểm tra xem có sắp hết hạn không
+                const isExpiringSoon = authService.isTokenExpiringSoon(token);
+                
+                if (isExpiringSoon) {
+                    // Token sắp hết hạn, refresh ngay
+                    console.log("Token expiring soon on page load, refreshing...");
+                    try {
+                        await authService.refreshToken();
+                        console.log("Token refreshed successfully on init");
+                    } catch (refreshError) {
+                        console.error("Token refresh failed on init:", refreshError);
+                        // Refresh thất bại, logout
+                        await authService.logout();
+                        dispatch({
+                            type: AUTH_ACTIONS.LOGOUT,
+                        });
+                        return;
+                    }
+                }
+
                 // Nếu đã có user trong initial state, chỉ cần validate với server
                 if (state.user && state.isAuthenticated) {
                     try {
@@ -249,6 +327,13 @@ export function AuthProvider({ children }) {
                         }
                     } catch (error) {
                         console.error("Validation error:", error);
+                        // Nếu có lỗi validation, kiểm tra xem có phải token hết hạn không
+                        if (error.response?.status === 401) {
+                            console.warn("Token expired during init, logging out...");
+                            await authService.logout();
+                            dispatch({ type: AUTH_ACTIONS.LOGOUT });
+                            return;
+                        }
                         // Nếu có lỗi, giữ user từ cache
                         dispatch({
                             type: AUTH_ACTIONS.SET_LOADING,
@@ -301,6 +386,55 @@ export function AuthProvider({ children }) {
 
         initAuth();
     }, [isInitialized]);
+
+    // Kiểm tra token khi tab/window được focus lại hoặc khi navigate
+    useEffect(() => {
+        // Kiểm tra token khi window được focus
+        const handleVisibilityChange = () => {
+            if (!document.hidden && state.isAuthenticated) {
+                checkAndHandleTokenExpiration();
+            }
+        };
+
+        // Kiểm tra token khi window được focus
+        const handleFocus = () => {
+            if (state.isAuthenticated) {
+                checkAndHandleTokenExpiration();
+            }
+        };
+
+        // Kiểm tra token định kỳ mỗi 5 phút (cho các trường hợp tab active lâu)
+        const intervalId = setInterval(() => {
+            if (state.isAuthenticated) {
+                checkAndHandleTokenExpiration();
+            }
+        }, 5 * 60 * 1000); // 5 phút
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleFocus);
+            clearInterval(intervalId);
+        };
+    }, [state.isAuthenticated, checkAndHandleTokenExpiration]);
+
+    // Kiểm tra token khi chuyển trang (dùng cho React Router)
+    useEffect(() => {
+        const checkTokenOnNavigation = () => {
+            if (state.isAuthenticated) {
+                checkAndHandleTokenExpiration();
+            }
+        };
+
+        // Lắng nghe sự kiện popstate (back/forward button)
+        window.addEventListener('popstate', checkTokenOnNavigation);
+
+        return () => {
+            window.removeEventListener('popstate', checkTokenOnNavigation);
+        };
+    }, [state.isAuthenticated, checkAndHandleTokenExpiration]);
 
     const login = async (credentials, sessionType = "user") => {
         dispatch({ type: AUTH_ACTIONS.LOGIN_START });
